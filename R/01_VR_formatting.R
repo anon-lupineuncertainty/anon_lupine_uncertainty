@@ -41,7 +41,7 @@ library( binom )
 
 # Data -------------------------------------------------------------------------
 
-lupine_df   <- read.csv( "data/lupine_all.csv" )
+lupine_df   <- read.csv( "data/lupine_df.csv" )
 germ        <- read_xlsx( "data/seedbaskets.xlsx" )
 sl_size     <- read.csv( "data/seedl_size.csv" )
 
