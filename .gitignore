@@ -1,6 +1,9 @@
 data/
 !data/.gitkeep
 
+results/
+!results/.gitkeep
+
 .Rhistory
 .RData
 .Ruserdata
@@ -13,6 +16,7 @@ data/
 *.rda
 *.csv
 *.xlsx
+*.png
 
 renv/library/
 renv/staging/
