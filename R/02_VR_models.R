@@ -1,7 +1,7 @@
 # ==============================================================================
 # Script: 02_VR_models.R
 #
-# Data formatting for vital rate modelling
+# Fitting vital rate models and performing model selection
 #
 # Purpose:
 # This script takes the formatted lupine demographic data from the previous 
