@@ -1,3 +1,6 @@
+data/
+!data/.gitkeep
+
 .Rhistory
 .RData
 .Ruserdata
@@ -5,6 +8,11 @@
 .Renviron
 .Rprofile
 *.Rproj
+*.RData
+*.rds
+*.rda
+*.csv
+*.xlsx
 
 renv/library/
 renv/staging/
