@@ -16,7 +16,6 @@
   # - data/pars_mean2.csv: Parameters needed to construct mean IPM with quadratic survival model
   # - data/pars_mean3.csv: Parameters needed to construct mean IPM with cubic survival model 
 #
-
 # Notes:
 # This script only requires access to the mean parameter values and is therefore
   # fully reproducible from this repository and its associated data archive.
