@@ -9,6 +9,8 @@
   # projection models. Two IPMs are constructed: one utilizing the quadratic
   # survival model, and one utilizing the cubic survival model. Each IPM is
   # constructed as a "raw," hand-built IPM, and also using `ipmr` functionality.
+  # This script also includes sensitivity and elasticity functions used in the
+  # bootstrap resampling.
 #
 # Inputs:
   # - data/pars_mean2.csv: Parameters needed to construct mean IPM with quadratic survival model
@@ -492,4 +494,54 @@ lambda_mean( pars_mean3 )
 ( ( lambda( lupinus_ipm3 ) - lambda_mean( pars_mean3 ) ) / lambda_mean( pars_mean3 ) ) * 100
 
 # ipmr model predicts 0.004% greater than hand-built IPM, which is tolerable
+
+
+# Sensitivity & elasticity analysis --------------------------------------------
+
+# Function to perform sensitivity analysis on hand-built IPMs
+  # Needs two parameter inputs:
+    # "pars", which is all of the parameters and their values
+    # "pars_list", which is a vector of the names of the parameters to perturb
+
+sens <- function( pars, pars_list, dp = 0.01 ){
+  nPar <- length( pars_list )
+  sPar <- numeric( nPar )
+  
+  for( i in 1:nPar ){
+    par.now <- pars_list[i]
+    m.par <- pars
+    m.par[[ which( names( m.par ) == par.now ) ]] <- m.par[[ which( names( m.par ) == par.now ) ]] - dp
+    lambda.down <- lambda_mean( m.par )
+    m.par[[ which( names( m.par ) == par.now ) ]] <- m.par[[ which( names( m.par ) == par.now ) ]] + 2*dp
+    lambda.up <- lambda_mean( m.par )
+    sj <- ( lambda.up - lambda.down ) / ( 2*dp )
+    sPar[i] <- sj
+  }
+  
+  df_out <- data.frame( parameter = pars_list,
+                        sensitivity = sPar,
+                        elasticity = sPar * abs( as.numeric( pars[ which( names( pars ) %in% pars_list ) ] ) ) / lambda_mean( pars ) )
+  
+  return( df_out )
+}
+
+
+# Perform the analysis
+
+pars_var2 <- c( "surv_b0", "surv_b1", "surv_b2",
+                "grow_b0", "grow_b1", "grow_sig",
+                "abort", "clip",
+                "flow_b0", "flow_b1",
+                "fert_b0", "fert_b1",
+                "g0", "g1", "g2" )
+
+pars_var3 <- c( "surv_b0", "surv_b1", "surv_b2", "surv_b3",
+               "grow_b0", "grow_b1", "grow_sig",
+               "abort", "clip",
+               "flow_b0", "flow_b1",
+               "fert_b0", "fert_b1",
+               "g0", "g1", "g2" )
+
+sens_elas2 <- sens( pars_mean2, pars_list = pars_var2 )
+sens_elas3 <- sens( pars_mean3, pars_list = pars_var3 )
 
