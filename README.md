@@ -8,14 +8,11 @@ Due to restrictions associated with sharing the underlying raw demographic datas
 
 To maximize transparency and reproducibility, several upstream scripts that rely on the raw dataset are included for reference. These scripts document the preprocessing, model fitting, and model selection workflow used in the case study, including generation of exploratory figures used to evaluate model fit. Although these scripts cannot be executed without access to the raw data, they are provided to allow readers and reviewers to fully inspect the analytical pipeline.
 
-All downstream analyses beginning with the bootstrapped parameter sets are fully reproducible using the files provided in this repository together with the datasets hosted on Zenodo, which also include an example dataframe illustrating the structure of the raw demographic data.
+All downstream analyses beginning with the mean parameter sets are fully reproducible using the files provided in this repository together with the datasets hosted on Zenodo, which also include an example dataframe illustrating the structure of the raw demographic data.
 
 Zenodo DOI: [DOI placeholder]
 
-The fully reproducible portion of the workflow begins with:
-`[script].R`
-
-A workflow overview is provided below.
+A workflow overview is provided below, with fully-reproducible scripts indicated.
 
 
 ### Software Environment
@@ -50,4 +47,8 @@ Package dependencies include:
 ### Workflow
 - `01_VR_formatting.R`: Construct functions to subset dataframes from the entire dataset to fit vital rate models on, and visualize the raw data
 - `02_VR_models.R`: Fit vital rate models, plot models over the raw data, perform model selection, and export model parameters
-- `03_IPMs.R`: Construct IPMs 
+- `03_IPMs.R`: Construct IPMs from mean model parameter values (fully reproducible)
+- `04_Sampling.R`: Bootstrap resample demographic data and refit vital rate models to generate a dataframe of sampled parameter values
+- `05_Uncertainty.R`: Perform the uncertainty analysis (fully reproducible)
+- `06_Simulation.R`: Simulate germination data and analyze contribution to uncertainty
+- `07_Figures.R`: Prepare figures for publication
