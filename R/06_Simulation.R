@@ -140,18 +140,18 @@ replace_germ <- function( i, n, pars, germ, seed = T ){
 
 # Perform for varying sample sizes
 
-germ6   <- lapply( 1:100, replace_germ, n = 6, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ10  <- lapply( 1:100, replace_germ, n = 10, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ20  <- lapply( 1:100, replace_germ, n = 20, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ30  <- lapply( 1:100, replace_germ, n = 30, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ40  <- lapply( 1:100, replace_germ, n = 40, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ50  <- lapply( 1:100, replace_germ, n = 50, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ75  <- lapply( 1:100, replace_germ, n = 75, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ100 <- lapply( 1:100, replace_germ, n = 100, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ200 <- lapply( 1:100, replace_germ, n = 200, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
-germ500 <- lapply( 1:100, replace_germ, n = 500, pars = s_pars[1:1000,], germ = germ_r, seed = T ) %>% bind_rows()
+germ6   <- lapply( 1:100, replace_germ, n = 6, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ10  <- lapply( 1:100, replace_germ, n = 10, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ20  <- lapply( 1:100, replace_germ, n = 20, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ30  <- lapply( 1:100, replace_germ, n = 30, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ40  <- lapply( 1:100, replace_germ, n = 40, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ50  <- lapply( 1:100, replace_germ, n = 50, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ75  <- lapply( 1:100, replace_germ, n = 75, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ100 <- lapply( 1:100, replace_germ, n = 100, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ200 <- lapply( 1:100, replace_germ, n = 200, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ500 <- lapply( 1:100, replace_germ, n = 500, pars = s_pars[1:1000,], germ = germ_r, seed = T )
 
-# Split into 100 dataframes each, perform uncertainty analyses on each set of parameters, plot
+# Perform uncertainty analyses on each set of parameters, reformat for plotting, export
 
 
 # Save output ------------------------------------------------------------------
