@@ -376,9 +376,9 @@ s_pars3[which(s_pars3$g2 == 0),"g2"] <- 1e-3
 
 
 uncert2 <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2, samples = s_pars2, 
-                        kernels = ker, vr_table = vr_tab2, delta = del, cores = 3 )
+                        kernels = ker, vr_table = vr_tab2, cores = 3 )
 uncert3 <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3, samples = s_pars3, 
-                        kernels = ker, vr_table = vr_tab3, delta = del, cores = 3 )
+                        kernels = ker, vr_table = vr_tab3, cores = 3 )
 
 
 # Save output ------------------------------------------------------------------
