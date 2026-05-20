@@ -100,9 +100,10 @@ sample_germ <- function( df, n ){
   
   germ_adj    <- calc_germ_adj( df, g0 = germ_ii$g0 )
   
-  germ_coef   <- data.frame( g0 = germ_ii['g0'],# * ( 1 - germ_adj ),
-                             g1 = germ_ii['g1'],# * ( 1 - germ_adj ),
-                             g2 = germ_ii['g2'])# * ( 1 - germ_adj ) )
+  germ_coef   <- data.frame( g0 = germ_ii['g0'] * ( 1 - germ_adj ),
+                             g1 = germ_ii['g1'] * ( 1 - germ_adj ),
+                             g2 = germ_ii['g2'] * ( 1 - germ_adj ),
+                             g_adj = germ_adj )
   
   return( germ_coef )
   
@@ -154,9 +155,11 @@ sample_params <- function( i, seed = F ){
   pars_temp2$g0    <- germ_coef$g0
   pars_temp2$g1    <- germ_coef$g1
   pars_temp2$g2    <- germ_coef$g2
+  pars_temp2$g_adj <- germ_coef$g_adj
   pars_temp3$g0    <- germ_coef$g0
   pars_temp3$g1    <- germ_coef$g1
   pars_temp3$g2    <- germ_coef$g2
+  pars_temp3$g_adj <- germ_coef$g_adj
   
   # add suffixes to differentiate parameter values between IPMs
   names( pars_temp2 ) <- paste0( names( pars_temp2 ), "_2" )
@@ -172,8 +175,8 @@ pars_s <- lapply( 1:n, sample_params, seed = T ) %>% bind_rows()
 
 # Split the output and remove the temporary suffixes
 
-pars_s2 <- pars_s[,1:22]
-pars_s3 <- pars_s[,23:45]
+pars_s2 <- pars_s[,1:23]
+pars_s3 <- pars_s[,24:46]
 
 names( pars_s2 ) <- gsub( "_2$", "", names( pars_s2 ) )
 names( pars_s3 ) <- gsub( "_3$", "", names( pars_s3 ) )
