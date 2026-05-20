@@ -361,13 +361,25 @@ vr_tab3 <- data.frame( parameter = pars_var3,
 
 # kernels: Kernel structure in row major order
 
-ker <- c( "SB2_SB2", "SB1_SB2", "enter_SB2",
-          "SB2_SB1", "SB1_SB1", "enter_SB1",
-          "SB2_germ", "SB1_germ", "repr", "P" )
+ker <- c( "SB1_SB1", "SB2_SB1", "enter_SB1",
+          "SB1_SB2", "SB2_SB2", "enter_SB2",
+          "SB1_germ", "SB2_germ", "P", "repr" )
 
+
+# Values of zero for g2 seem to break the IPM, replace with very small number
+
+s_pars2[which(s_pars2$g2 == 0),"g2"] <- 0.00000001
+s_pars3[which(s_pars3$g2 == 0),"g2"] <- 0.00000001
+
+# And set delta to a smaller number
+
+del <- 0.000000001
 
 # Uncertainty analysis ---------------------------------------------------------
 
-uncert2 <- uncertainty( lupinus_ipm2, pars_var2, s_pars2, ker, vr_tab2, cores = 3 )
-uncert3 <- uncertainty( lupinus_ipm3, pars_var3, s_pars3, ker, vr_tab3, cores = 3 )
+
+uncert2 <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2, samples = s_pars2, 
+                        kernels = ker, vr_table = vr_tab2, delta = del, cores = 3 )
+uncert3 <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3, samples = s_pars3, 
+                        kernels = ker, vr_table = vr_tab3, delta = del, cores = 3 )
 
