@@ -50,5 +50,5 @@ Package dependencies include:
 - `03_IPMs.R`: Construct IPMs from mean model parameter values (fully reproducible)
 - `04_Sampling.R`: Bootstrap resample demographic data and refit vital rate models to generate a dataframe of sampled parameter values
 - `05_Uncertainty.R`: Perform the uncertainty analysis (fully reproducible)
-- `06_Simulation.R`: Simulate germination data and analyze contribution to uncertainty
-- `07_Figures.R`: Prepare figures for publication
+- `06_Simulation.R`: Simulate germination data and analyze contribution to uncertainty (fully reproducible)
+- `07_Figures.R`: Prepare figures for publication (fully reproducible)
