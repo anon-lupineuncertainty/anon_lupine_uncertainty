@@ -366,14 +366,11 @@ ker <- c( "SB1_SB1", "SB2_SB1", "enter_SB1",
           "SB1_germ", "SB2_germ", "P", "repr" )
 
 
-# Values of zero for g2 seem to break the IPM, replace with very small number
+# Values of zero for g2 seem to break the IPM, replace with small number
 
-s_pars2[which(s_pars2$g2 == 0),"g2"] <- 0.00000001
-s_pars3[which(s_pars3$g2 == 0),"g2"] <- 0.00000001
+s_pars2[which(s_pars2$g2 == 0),"g2"] <- 1e-3
+s_pars3[which(s_pars3$g2 == 0),"g2"] <- 1e-3
 
-# And set delta to a smaller number
-
-del <- 0.000000001
 
 # Uncertainty analysis ---------------------------------------------------------
 
