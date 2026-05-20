@@ -100,10 +100,10 @@ sample_germ <- function( df, n ){
   
   germ_adj    <- calc_germ_adj( df, g0 = germ_ii$g0 )
   
-  germ_coef   <- data.frame( g0 = germ_ii['g0'] * ( 1 - germ_adj ),
-                             g1 = germ_ii['g1'] * ( 1 - germ_adj ),
-                             g2 = germ_ii['g2'] * ( 1 - germ_adj ),
-                             g_adj = germ_ii['g0'] - ( germ_ii['g0'] * germ_adj ) )
+  germ_coef   <- data.frame( g0 = germ_ii$g0 * ( 1 - germ_adj ),
+                             g1 = germ_ii$g1 * ( 1 - germ_adj ),
+                             g2 = germ_ii$g2 * ( 1 - germ_adj ),
+                             g_adj = germ_ii$g0 - ( germ_ii$g0 * germ_adj ) )
   
   return( germ_coef )
   
@@ -176,7 +176,7 @@ pars_s <- lapply( 1:n, sample_params, seed = T ) %>% bind_rows()
 # Split the output and remove the temporary suffixes
 
 pars_s2 <- pars_s[,1:23]
-pars_s3 <- pars_s[,24:46]
+pars_s3 <- pars_s[,24:47]
 
 names( pars_s2 ) <- gsub( "_2$", "", names( pars_s2 ) )
 names( pars_s3 ) <- gsub( "_3$", "", names( pars_s3 ) )
