@@ -124,8 +124,8 @@ surv_mod2 <- glm( surv_t1 ~ log_area_t0 + log_area_t02,
 surv_mod3 <- glm( surv_t1 ~ log_area_t0 + log_area_t02 + log_area_t03, 
                    data = surv, family = "binomial" )
 
-model_AIC  <- data.frame( model = c( 2, 3 ), size = c( 0.5, 0.5 ), 
-                          survival = c( 0.75, 0.75 ), 
+model_AIC  <- data.frame( model = c( 2, 3 ), size = c( 5, 5 ), 
+                          survival = c( 0.25, 0.25 ), 
                           AIC = c( paste0( "AIC = ", round( AIC( surv_mod2 ), 2 ) ), 
                                    paste0( "AIC = ", round( AIC( surv_mod3 ), 2 ) ) ) )
 
@@ -185,12 +185,12 @@ fig2b <- fig2_base +
 model_labs <- c( "Quadratic", "Cubic" )
 
 var_tab2 <- uncert2$vr_uncert
-var_tab2[5,] <- c( "total", uncert2$mod_uncert )
-var_tab2$type <- "quadratic"
+var_tab2[5,] <- list( "total", uncert2$mod_uncert )
+var_tab2$type <- 2
 
 var_tab3 <- uncert3$vr_uncert
-var_tab3[5,] <- c( "total", uncert3$mod_uncert )
-var_tab3$type <- "cubic"
+var_tab3[5,] <- list( "total", uncert3$mod_uncert )
+var_tab3$type <- 3
 
 var_tab <- bind_rows( var_tab2, var_tab3 )
 
@@ -202,7 +202,7 @@ fig2c <- ggplot( ) +
   geom_bar( data = var_tab[which(var_tab$vital_rate == "total" ),], 
             aes( x = type, y = variance_sum ), 
             stat = "identity", position = "stack", color = "black", fill = NA ) +
-  scale_fill_manual( values = c( "#D0873C", "#8FB339", "#7A5195", "#88CCEE" ),
+  scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
                      labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
                      guide = "legend" ) +
   scale_x_continuous( breaks = c( 2, 3 ), labels = model_labs ) +
