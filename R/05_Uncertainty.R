@@ -383,3 +383,9 @@ uncert2 <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2, samples = s_pars2,
 uncert3 <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3, samples = s_pars3, 
                         kernels = ker, vr_table = vr_tab3, delta = del, cores = 3 )
 
+
+# Save output ------------------------------------------------------------------
+
+saveRDS( uncert2, "data/uncert2.rds" )
+saveRDS( uncert3, "data/uncert3.rds" )
+
