@@ -469,19 +469,19 @@ extr_pars <- function( type ){
   if( type == "3" ){
     
     pars_3 <- list(
-      surv_b0     = coef( mod_surv3 )[[1]],
-      surv_b1     = coef( mod_surv3 )[[2]],
-      surv_b2     = coef( mod_surv3 )[[3]],
-      surv_b3     = coef( mod_surv3 )[[4]]
+      surv_b0     = coef( mod_surv )[[1]],
+      surv_b1     = coef( mod_surv )[[2]],
+      surv_b2     = coef( mod_surv )[[3]],
+      surv_b3     = coef( mod_surv )[[4]]
     )
     
     pars_mean <- append( pars_3, pars_shared )
   } else {
     
     pars_2 <- list(
-      surv_b0     = coef( mod_surv2 )[[1]],
-      surv_b1     = coef( mod_surv2 )[[2]],
-      surv_b2     = coef( mod_surv2 )[[3]]
+      surv_b0     = coef( mod_surv )[[1]],
+      surv_b1     = coef( mod_surv )[[2]],
+      surv_b2     = coef( mod_surv )[[3]]
     )
     
     pars_mean <- append( pars_2, pars_shared )
