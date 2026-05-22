@@ -156,14 +156,14 @@ germ500 <- lapply( 1:100, replace_germ, n = 500, pars = s_pars[1:1000,], germ = 
 
 # Save output ------------------------------------------------------------------
 
-write.csv( germ6, "data/pars_gsim6.csv", row.names = F )
-write.csv( germ10, "data/pars_gsim10.csv", row.names = F )
-write.csv( germ20, "data/pars_gsim20.csv", row.names = F )
-write.csv( germ30, "data/pars_gsim30.csv", row.names = F )
-write.csv( germ40, "data/pars_gsim40.csv", row.names = F )
-write.csv( germ50, "data/pars_gsim50.csv", row.names = F )
-write.csv( germ75, "data/pars_gsim75.csv", row.names = F )
-write.csv( germ100, "data/pars_gsim100.csv", row.names = F )
-write.csv( germ200, "data/pars_gsim200.csv", row.names = F )
-write.csv( germ500, "data/pars_gsim500.csv", row.names = F )
+write.csv( bind_rows(germ6), "data/pars_gsim6.csv", row.names = F )
+write.csv( bind_rows(germ10), "data/pars_gsim10.csv", row.names = F )
+write.csv( bind_rows(germ20), "data/pars_gsim20.csv", row.names = F )
+write.csv( bind_rows(germ30), "data/pars_gsim30.csv", row.names = F )
+write.csv( bind_rows(germ40), "data/pars_gsim40.csv", row.names = F )
+write.csv( bind_rows(germ50), "data/pars_gsim50.csv", row.names = F )
+write.csv( bind_rows(germ75), "data/pars_gsim75.csv", row.names = F )
+write.csv( bind_rows(germ100), "data/pars_gsim100.csv", row.names = F )
+write.csv( bind_rows(germ200), "data/pars_gsim200.csv", row.names = F )
+write.csv( bind_rows(germ500), "data/pars_gsim500.csv", row.names = F )
 
