@@ -151,7 +151,217 @@ germ100 <- lapply( 1:100, replace_germ, n = 100, pars = s_pars[1:1000,], germ = 
 germ200 <- lapply( 1:100, replace_germ, n = 200, pars = s_pars[1:1000,], germ = germ_r, seed = T )
 germ500 <- lapply( 1:100, replace_germ, n = 500, pars = s_pars[1:1000,], germ = germ_r, seed = T )
 
-# Perform uncertainty analyses on each set of parameters, reformat for plotting, export
+
+# Uncertainty analysis ---------------------------------------------------------
+
+# Initialize the ipmr IPM object (using quadratic survival model)
+
+lupinus_ipm2 <- init_ipm( sim_gen = "general",
+                          di_dd = "di",
+                          det_stoch = "det",
+                          kern_param = NULL ) %>% 
+  define_kernel(
+    name          = "P",
+    formula       = s * g * d_sz,
+    family        = "CC",
+    s             = inv_logit( surv_b0 + ( surv_b1 * sz_1 ) + ( surv_b2 * ( sz_1 ^ 2 ) ) ),
+    g             = dnorm( sz_2, g_mu, grow_sig ),
+    g_mu          = grow_b0 + ( grow_b1 * sz_1 ),
+    data_list     = pars_mean2,
+    states        = list( c( 'sz' ) ),
+    evict_cor     = FALSE
+  ) %>%
+  define_kernel(
+    name          = "repr",
+    formula       = r_r * r_s * fruit_rac * seed_fruit * ( 1 - ( abort + clip ) ) * g0 * recs * d_sz,
+    family        = "CC",
+    r_r           = inv_logit( flow_b0 + ( flow_b1 * sz_1 ) ),
+    r_s           = exp( fert_b0 + ( fert_b1 * sz_1 ) ),
+    recs          = dnorm( sz_2, recr_sz, recr_sd ),
+    data_list     = pars_mean2,
+    states        = list( c( 'sz' ) ),
+    evict_cor     = FALSE
+  ) %>%
+  define_kernel(
+    name          = "enter_SB1",
+    formula       = f * g1 * d_sz,
+    family        = "CD",
+    f             = v_rac * fruit_rac * seed_fruit,
+    v_rac         = tot_rac * ( 1 - ( abort + clip ) ),
+    tot_rac       = inv_logit( flow_b0 + ( flow_b1 * sz_1 ) ) * exp( fert_b0 + ( fert_b1 * sz_1 ) ),
+    data_list     = pars_mean2,
+    states        = list( c( 'sz', 'sb1' ) ),
+    evict_cor     = FALSE
+  ) %>%
+  define_kernel(
+    name          = "enter_SB2",
+    formula       = f * g2 * d_sz,
+    family        = "CD",
+    f             = v_rac * fruit_rac * seed_fruit,
+    v_rac         = tot_rac * ( 1 - ( abort + clip ) ),
+    tot_rac       = inv_logit( flow_b0 + ( flow_b1 * sz_1 ) ) * exp( fert_b0 + ( fert_b1 * sz_1 ) ),
+    data_list     = pars_mean2,
+    states        = list( c( 'sz', 'sb2' ) ),
+    evict_cor     = FALSE
+  ) %>%
+  define_kernel(
+    name      = "SB1_SB1",
+    formula   = 0,
+    family    = "DD",
+    states    = list( c( 'sb1' ) ),
+    evict_cor = FALSE
+  ) %>%
+  define_kernel(
+    name      = "SB2_SB2",
+    formula   = 0,
+    family    = "DD",
+    states    = list( c( 'sb2' ) ),
+    evict_cor = FALSE
+  ) %>%
+  define_kernel(
+    name          = "SB2_SB1",
+    formula       = 1,
+    family        = "DD",
+    states        = list( c( 'sb2', 'sb1' ) ),
+    evict_cor     = FALSE,
+    uses_par_sets = FALSE
+  ) %>%
+  define_kernel(
+    name      = "SB1_SB2",
+    formula   = 0,
+    family    = "DD",
+    states    = list( c( 'sb1', 'sb2' ) ),
+    evict_cor = FALSE
+  ) %>%
+  define_kernel(
+    name          = "SB1_germ",
+    formula       = recs,
+    family        = "DC",
+    recs          = dnorm( sz_2, recr_sz, recr_sd ),
+    data_list     = pars_mean2,
+    states        = list( c( 'sb1', 'sz' ) ),
+    evict_cor     = TRUE,
+    evict_fun     = truncated_distributions( 'norm', 'recs' )
+  ) %>%
+  define_kernel(
+    name          = "SB2_germ",
+    formula       = 0,
+    family        = "DC",
+    states        = list( c( 'sb2', 'sz' ) ),
+    evict_cor     = FALSE
+  ) %>%
+  define_impl(
+    list(
+      P         = list( int_rule    = "midpoint",
+                        state_start = "sz",
+                        state_end   = "sz" ),
+      repr      = list( int_rule    = "midpoint",
+                        state_start = "sz",
+                        state_end   = "sz" ),
+      enter_SB1 = list( int_rule    = "midpoint",
+                        state_start = "sz",
+                        state_end   = "sb1" ),
+      enter_SB2 = list( int_rule    = "midpoint",
+                        state_start = "sz",
+                        state_end   = "sb2" ),
+      SB1_SB1   = list( int_rule    = "midpoint",
+                        state_start = "sb1",
+                        state_end   = "sb1" ),
+      SB1_SB2   = list( int_rule    = "midpoint",
+                        state_start = "sb1",
+                        state_end   = "sb2" ),
+      SB2_SB1   = list( int_rule    = "midpoint",
+                        state_start = "sb2",
+                        state_end   = "sb1" ),
+      SB2_SB2   = list( int_rule    = "midpoint",
+                        state_start = "sb2",
+                        state_end   = "sb2" ),
+      SB1_germ  = list( int_rule    = "midpoint",
+                        state_start = "sb1",
+                        state_end   = "sz" ),
+      SB2_germ  = list( int_rule    = "midpoint",
+                        state_start = "sb2",
+                        state_end   = "sz" )
+    )
+  ) %>%
+  define_domains(
+    sz = c( pars_mean2$L, pars_mean2$U, pars_mean2$mat_siz )
+  ) %>%
+  define_pop_state(
+    pop_vectors = list(
+      n_sz  = rep( 1/100, 100 ),
+      n_sb1 = 20,
+      n_sb2 = 20
+    )
+  )
+
+lupinus_ipm2 <- lupinus_ipm2 %>% make_ipm( iterations = 100,
+                                           usr_funs = list( inv_logit = inv_logit ) )
+
+# Setup the other necessary arguments
+
+pars_var2   <- c( "surv_b0", "surv_b1", "surv_b2", 
+                  "grow_b0", "grow_b1", "grow_sig",
+                  "abort", "clip",
+                  "flow_b0", "flow_b1",
+                  "fert_b0", "fert_b1",
+                  "g0", "g1", "g2" )
+
+vr_tab2 <- data.frame( parameter = pars_var2,
+                       vital_rate = c( rep( "survival", 3 ),
+                                       rep( "growth", 3 ),
+                                       rep( "reproduction", 6 ),
+                                       rep( "recruitment", 3 ) ) )
+
+ker <- c( "SB1_SB1", "SB2_SB1", "enter_SB1",
+          "SB1_SB2", "SB2_SB2", "enter_SB2",
+          "SB1_germ", "SB2_germ", "P", "repr" )
+
+
+# Function to replace zeroes in sampled parameter values
+  # Default value 1e-3
+
+repl_zero <- function( df, value = 1e-3 ){
+  
+  df[which(df$g2 == 0),"g2"] <- value
+  df[which(df$g1 == 0),"g1"] <- value
+  df[which(df$g0 == 0),"g0"] <- value
+  
+  return( df )
+}
+
+germ6_c <- repl_zero( germ6 )
+germ10_c <- repl_zero( germ10 )
+germ20_c <- repl_zero( germ20 )
+germ30_c <- repl_zero( germ30 )
+germ40_c <- repl_zero( germ40 )
+germ50_c <- repl_zero( germ50 )
+germ75_c <- repl_zero( germ75 )
+germ100_c <- repl_zero( germ100 )
+germ200_c <- repl_zero( germ200 )
+germ500_c <- repl_zero( germ500 )
+
+
+# Function to iteratively perform uncertainty analysis on subsets of sampled
+  # parameter values
+
+uncert_it <- function( i, df ){
+  
+  pars_temp <- df[which(df$rep == i),]
+  
+  uncert_temp <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2,
+                              samples = pars_temp, kernels = ker,
+                              vr_table = vr_tab2, cores = 3 )
+  
+  uncert_out <- uncert_temp$vr_uncert
+  uncert_out[5,1] <- "total"
+  uncert_out[5,2] <- uncert_temp$mod_uncert
+  uncert_out$rep <- i
+  
+  return( uncert_out )
+}
+
+g_uncert6 <- lapply( 1:2, uncert_it, germ6_c ) %>% bind_rows() # this took like 25min
 
 
 # Save output ------------------------------------------------------------------
@@ -167,3 +377,14 @@ write.csv( bind_rows(germ100), "data/pars_gsim100.csv", row.names = F )
 write.csv( bind_rows(germ200), "data/pars_gsim200.csv", row.names = F )
 write.csv( bind_rows(germ500), "data/pars_gsim500.csv", row.names = F )
 
+
+germ6   <- read.csv( "data/pars_gsim6.csv" )
+germ10  <- read.csv( "data/pars_gsim10.csv" )
+germ20  <- read.csv( "data/pars_gsim20.csv" )
+germ30  <- read.csv( "data/pars_gsim30.csv" )
+germ40  <- read.csv( "data/pars_gsim40.csv" )
+germ50  <- read.csv( "data/pars_gsim50.csv" )
+germ75  <- read.csv( "data/pars_gsim75.csv" )
+germ100 <- read.csv( "data/pars_gsim100.csv" )
+germ200 <- read.csv( "data/pars_gsim200.csv" )
+germ500 <- read.csv( "data/pars_gsim500.csv" )
