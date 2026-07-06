@@ -10,6 +10,9 @@
   # - data/surv.csv: Full demographic dataset, subsetted for survival model
   # - data/uncert2.rds: Output of uncertainty analysis using quadratic survival model
   # - data/uncert3.rds: Output of uncertainty analysis using cubic survival model
+  # - data/mean_lambdas.csv: Lambda values from the mean models
+  # - data/pars_sample2.csv: Sampled parameter values with quadratic survival model
+  # - data/pars_sample3.csv: Sampled parameter values with cubic survival model
 #
 # Outputs:
 # 
@@ -37,6 +40,9 @@ uncert2 <- readRDS( "data/uncert2.rds" )
 uncert3 <- readRDS( "data/uncert3.rds" )
 
 mean_lambdas <- read.csv( "data/mean_lambdas.csv" )
+
+s_pars2 <- read.csv( "data/pars_sample2.csv" )
+s_pars3 <- read.csv( "data/pars_sample3.csv" )
 
 
 # Figure 1 ---------------------------------------------------------------------
@@ -299,6 +305,158 @@ fig3 <- wrap_plots( fig3ab ) + wrap_plots( fig3cd ) +
 
 
 
+# Figure S1 --------------------------------------------------------------------
+
+# Parameter covariance matrices
+
+corr2 <- cor( s_pars2[,c(pars_var2,"g_adj")] )
+corr3 <- cor( s_pars3[,c(pars_var3,"g_adj")] )
+
+corr2_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(corr2),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+corr3_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(corr3),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+sig2 <- cor_pmat( s_pars2[,c(pars_var2,"g_adj")] )
+sig3 <- cor_pmat( s_pars3[,c(pars_var3,"g_adj")] )
+
+sig2_star <- sig2
+sig3_star <- sig3
+
+for( i in 1:length(sig2)){
+  if(sig2[i] < 0.001){
+    sig2_star[i] <- "***"
+  } else {
+    if(sig2[i] < 0.01){
+      sig2_star[i] <- "**"
+    } else {
+      if(sig2[i] < 0.05){
+        sig2_star[i] <- "*"
+      } else 
+        sig2_star[i] <- ""
+    }
+  }
+}
+
+for( i in 1:length(sig3)){
+  if(sig3[i] < 0.001){
+    sig3_star[i] <- "***"
+  } else {
+    if(sig3[i] < 0.01){
+      sig3_star[i] <- "**"
+    } else {
+      if(sig3[i] < 0.05){
+        sig3_star[i] <- "*"
+      } else 
+        sig3_star[i] <- ""
+    }
+  }
+}
+
+star2_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(sig2_star),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+star3_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(sig3_star),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+corr2_plot$text <- star2_plot$correlation
+corr3_plot$text <- star3_plot$correlation
+
+figs1a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
+  geom_tile() +
+  geom_text( aes( label = text ) ) +
+  base_theme +
+  labs( title = "(a) With quadratic survival model" ) + 
+  scale_fill_gradient2( low = "#D55E00", mid = "white", high = "#0072B2",
+                        midpoint = 0, limits = c(-1,1), name = "Correlation" ) +
+  theme( axis.title.x = element_blank(),
+         axis.title.y = element_blank(),
+         axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 16.7, ymax = 17.0,
+            fill = "#7A5195" ) +
+  annotate( "rect", xmin = 6.5, xmax = 10.5, ymin = 16.7, ymax = 17.0,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 10.5, xmax = 13.5, ymin = 16.7, ymax = 17.0,
+            fill = "#8FB339" ) +
+  annotate( "rect", xmin = 13.5, xmax = 16.5, ymin = 16.7, ymax = 17.0,
+            fill = "#D0873C" ) +
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 0.5, ymax = 6.5,
+            fill = "#7A5195" ) +
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 6.5, ymax = 10.5,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 10.5, ymax = 13.5,
+            fill = "#8FB339" ) +
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 13.5, ymax = 16.5, 
+            fill = "#D0873C" ) +
+  geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
+
+
+figs1b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
+  geom_tile() +
+  geom_text( aes( label = text ) ) +
+  labs( title = "(b) With cubic survival model" ) + 
+  base_theme + 
+  scale_fill_gradient2( low = "#D55E00", mid = "white", high = "#0072B2",
+                        midpoint = 0, limits = c(-1,1), name = "Correlation" ) +
+  theme( axis.title.x = element_blank(),
+         axis.title.y = element_blank(),
+         axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 17.7, ymax = 18.0,
+            fill = "#7A5195" ) +
+  annotate( "rect", xmin = 6.5, xmax = 10.5, ymin = 17.7, ymax = 18.0,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 10.5, xmax = 13.5, ymin = 17.7, ymax = 18.0,
+            fill = "#8FB339" ) +
+  annotate( "rect", xmin = 13.5, xmax = 17.5, ymin = 17.7, ymax = 18.0,
+            fill = "#D0873C" ) +
+  annotate( "rect", xmin = 17.7, xmax = 18.0, ymin = 0.5, ymax = 6.5,
+            fill = "#7A5195" ) +
+  annotate( "rect", xmin = 17.7, xmax = 18.0, ymin = 6.5, ymax = 10.5,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 17.7, xmax = 18.0, ymin = 10.5, ymax = 13.5,
+            fill = "#8FB339" ) +
+  annotate( "rect", xmin = 17.7, xmax = 18.0, ymin = 13.5, ymax = 17.5, 
+            fill = "#D0873C" ) +
+  geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
+
+figs1b <- figs1b +
+  theme(
+    legend.position = "none"
+  )
+
+figs1 <- figs1a / figs1b
+
 
 # Save output ------------------------------------------------------------------
 
@@ -307,4 +465,8 @@ ggsave( "results/Figure1.pdf", fig1, width = 180, height = 100, units = "mm",
 ggsave( "results/Figure2.pdf", fig2, width = 85, height = 100, units = "mm",
         device = cairo_pdf )
 ggsave( "results/Figure3.pdf", fig3, width = 180, height = 130, units = "mm",
+        device = cairo_pdf )
+
+
+ggsave( "results/FigureS1.pdf", figs1, width = 180, height = 220, units = "mm",
         device = cairo_pdf )
