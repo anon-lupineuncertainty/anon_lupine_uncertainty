@@ -26,6 +26,7 @@ options( stringsAsFactors = F )
 library( ipmr )
 library( ggplot2 )
 library( patchwork )
+library( ggsignif )
 
 
 # Data -------------------------------------------------------------------------
@@ -35,17 +36,113 @@ surv    <- read.csv( "data/surv.csv" )
 uncert2 <- readRDS( "data/uncert2.rds" )
 uncert3 <- readRDS( "data/uncert3.rds" )
 
-
+mean_lambdas <- read.csv( "data/mean_lambdas.csv" )
 
 
 # Figure 1 ---------------------------------------------------------------------
 
-fig1a <- plot( uncert2, type = "param" )
-
-fig1b <- plot( uncert2, type = "vr" )
+fig1 <- plot( uncert2, type = "param" )
 
 
 # Figure 2 ---------------------------------------------------------------------
+
+fig2 <- plot( uncert2, type = "vr" )
+
+
+# Figure 3 ---------------------------------------------------------------------
+
+# Figure 3a
+
+model_labs <- c( "Quadratic", "Cubic" )
+
+lam_tab2 <- uncert2$lambdas
+lam_tab2$type <- 2
+
+lam_tab3 <- uncert3$lambdas
+lam_tab3$type <- 3
+
+lam_tab <- bind_rows( lam_tab2, lam_tab3 )
+
+lam_t <- t.test( lambda ~ type, data = lam_tab )
+
+mean_lam <- data.frame( type  = c( 2, 2, 3, 3 ),
+                        model = c( "Mean model", "Mean of sampled models",
+                                   "Mean model", "Mean of sampled models" ),
+                        value = c( mean_lambdas[1,2], mean( lam_tab2$lambda ),
+                                   mean_lambdas[2,2], mean( lam_tab3$lambda ) ) )
+
+fig3a <- ggplot() +
+  geom_violin( data = lam_tab, aes( x = factor( type ), y = lambda,
+                                    fill = factor( type ) ),
+               color = NA, alpha = 0.4 ) +
+  geom_signif( data = lam_tab, aes( x = factor( type ), y = lambda ),
+               comparisons = list( c("2","3")),
+               map_signif_level = TRUE ) +
+  scale_fill_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
+  geom_segment( aes( x = 0.55, y = mean_lam[2,3], 
+                     xend = 1.45, yend = mean_lam[2,3],
+                     alpha = "Mean of samples" ),
+                size = 0.9, color = "#f5a351" ) +
+  geom_segment( aes( x = 1.55, y = mean_lam[4,3], 
+                     xend = 2.45, yend = mean_lam[4,3] ),
+                size = 0.9, color = "#a85603"  ) +
+  geom_point( data = mean_lam[c(1,3),], aes( x = factor( type ), y = value,
+                                             color = factor( type ), 
+                                             alpha = "Mean model" ),
+              cex = 2, pch = 16 ) +
+  scale_color_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
+  scale_x_discrete( labels = model_labs ) +
+  scale_alpha_manual( name = NULL,
+                      values = c( 1, 1 ),
+                      breaks = c( "Mean model", "Mean of samples" ),
+                      guide = guide_legend( override.aes = list( linetype = c(0,1),
+                                                                shape = c(16,NA),
+                                                                color = "#D0873C" ) )
+                      ) +
+  ylim( min( lam_tab$lambda ) - 0.03, max( lam_tab$lambda ) + 0.3 ) +
+  labs( x = "Survival model", 
+        y = "Lambda",
+        title = "(a)" ) +
+  theme_bw( )
+
+# Figure 3b
+
+var_tab2 <- uncert2$vr_uncert
+var_tab2[5,] <- list( "total", uncert2$mod_uncert )
+var_tab2$type <- 2
+
+var_tab3 <- uncert3$vr_uncert
+var_tab3[5,] <- list( "total", uncert3$mod_uncert )
+var_tab3$type <- 3
+
+var_tab <- bind_rows( var_tab2, var_tab3 )
+
+
+fig3b <- ggplot( ) + 
+  geom_bar( data = var_tab[which(var_tab$vital_rate != "total" ),], 
+            aes( x = type, y = variance_sum, fill = vital_rate ), 
+            stat = "identity", position = "stack", width = 0.7 ) +
+  geom_bar( data = var_tab[which(var_tab$vital_rate == "total" ),], 
+            aes( x = type, y = variance_sum, alpha = "Model uncertainty" ), 
+            stat = "identity", position = "stack", color = "black", fill = NA,
+            linewidth = 0.8, width = 0.7 ) +
+  scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
+                     labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
+                     guide = "legend" ) +
+  scale_x_continuous( breaks = c( 2, 3 ), labels = model_labs ) +
+  scale_alpha_manual( name = NULL,
+                      values = 1,
+                      breaks = "Model uncertainty",
+                      guide = guide_legend( override.aes = list( color = "black" ) )
+  ) +
+  guides( fill = guide_legend( "Vital rate contribution" ) ) +
+  labs( x = "Survival model", 
+        y = "Uncertainty",
+        title = "(b)",
+        fill = "Vital rate contribution" ) +
+  theme_bw( )
+
+# Figure 3c
 
 plot_binned_prop <- function( df, n_bins, siz_var, rsp_var ){
   
@@ -106,17 +203,17 @@ plot_binned_prop <- function( df, n_bins, siz_var, rsp_var ){
 
 surv_binned <- plot_binned_prop( surv, 10, log_area_t0, surv_t1 )
 
-fig2_base <- ggplot() + 
+fig3_base <- ggplot() + 
   geom_jitter( data = surv, aes( x = log_area_t0, y = surv_t1 ),
                width = 0.05, height = 0.1, alpha = 0.1 ) +
   geom_errorbar( data = surv_binned, 
                  aes( x = log_area_t0, ymin = lwr, ymax = upr ),
                  size = 0.5, width = 0.2 ) +
   geom_point( data = surv_binned,
-              aes( x = log_area_t0, y = surv_t1 ), color = "red", cex = 2 ) +
+              aes( x = log_area_t0, y = surv_t1 ), color = "#D0873C", cex = 2 ) +
   ylim( -0.1, 1.1 ) +
-  labs( x = "log( Size at time t0)",
-        y = "Probability of survival to time t1" ) +
+  labs( x = expression(log(Size~at~time~italic(t[0]))),
+        y = expression(Probability~of~survival~to~time~italic(t[1])) ) +
   theme_bw( )
 
 surv_mod2 <- glm( surv_t1 ~ log_area_t0 + log_area_t02, 
@@ -158,68 +255,56 @@ surv_pred3 <- predictor_fun( seq_x, coef( surv_mod3 ) ) %>%
   data.frame( log_area_t0 = seq_x,
               surv_t1 = . )
 
-# Figure 2a
+# Figure 3c
 
-fig2a <- fig2_base +
+fig3c <- fig3_base +
   geom_text( data = model_AIC[which( model_AIC$model == 2 ),], 
              aes( x = size, y = survival, label = AIC ) ) +
   geom_line( data = surv_pred2, 
              aes( x = log_area_t0,
                   y = surv_t1 ),
-             color = "red", lwd = 1.5, alpha = 0.8 ) +
-  labs( title = "(a) Quadratic model" )
+             color = "#f5a351", lwd = 1.5, alpha = 0.8 ) +
+  labs( title = "(c) Quadratic model" )
 
-# Figure 2b
+# Figure 3d
 
-fig2b <- fig2_base +
+fig3d <- fig3_base +
   geom_text( data = model_AIC[which( model_AIC$model == 3 ),], 
              aes( x = size, y = survival, label = AIC ) ) +
   geom_line( data = surv_pred3, 
              aes( x = log_area_t0,
                   y = surv_t1 ),
-             color = "red", lwd = 1.5, alpha = 0.8 ) +
-  labs( title = "(b) Cubic model" )
-
-# Figure 2c
-
-model_labs <- c( "Quadratic", "Cubic" )
-
-var_tab2 <- uncert2$vr_uncert
-var_tab2[5,] <- list( "total", uncert2$mod_uncert )
-var_tab2$type <- 2
-
-var_tab3 <- uncert3$vr_uncert
-var_tab3[5,] <- list( "total", uncert3$mod_uncert )
-var_tab3$type <- 3
-
-var_tab <- bind_rows( var_tab2, var_tab3 )
+             color = "#a85603", lwd = 1.5, alpha = 0.8 ) +
+  labs( title = "(d) Cubic model" )
 
 
-fig2c <- ggplot( ) + 
-  geom_bar( data = var_tab[which(var_tab$vital_rate != "total" ),], 
-            aes( x = type, y = variance_sum, fill = vital_rate ), 
-            stat = "identity", position = "stack" ) +
-  geom_bar( data = var_tab[which(var_tab$vital_rate == "total" ),], 
-            aes( x = type, y = variance_sum ), 
-            stat = "identity", position = "stack", color = "black", fill = NA ) +
-  scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
-                     labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
-                     guide = "legend" ) +
-  scale_x_continuous( breaks = c( 2, 3 ), labels = model_labs ) +
-  guides( fill = guide_legend( "Vital rate contribution" ) ) +
-  labs( x = "Survival model", 
-        y = "Uncertainty",
-        title = "(c)",
-        fill = "Vital rate contribution" ) +
-  theme_bw( )
+base_theme <- theme_minimal() +
+  theme(
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.margin = margin(5.5, 10, 5.5, 5.5)
+  )
 
-# Figure 2, all together
+# Figure 3, all together
 
-fig2ab <- fig2a + fig2b + plot_layout( ncol = 1, axes = "collect" )
+fig3ab <- fig3a + fig3b + plot_layout( ncol = 1, axes = "collect_x" )
 
-fig2 <- wrap_plots( fig2ab ) + fig2c + plot_layout( ncol = 2 )
+fig3cd <- fig3c + fig3d + plot_layout( ncol = 1, axes = "collect" )
+
+fig3 <- wrap_plots( fig3ab ) + wrap_plots( fig3cd ) + 
+  plot_layout( ncol = 2, widths = c(1,2) ) & base_theme
 
 
-# Figure 3 ---------------------------------------------------------------------
+# Figure 4 ---------------------------------------------------------------------
 
 
+
+
+
+# Save output ------------------------------------------------------------------
+
+ggsave( "results/Figure1.pdf", fig1, width = 180, height = 100, units = "mm",
+        device = cairo_pdf )
+ggsave( "results/Figure2.pdf", fig2, width = 85, height = 100, units = "mm",
+        device = cairo_pdf )
+ggsave( "results/Figure3.pdf", fig3, width = 180, height = 130, units = "mm",
+        device = cairo_pdf )
