@@ -1,6 +1,6 @@
 # Lupine IPM Uncertainty Analysis
 
-This repository contains scripts for analyzing uncertainty in integral projection models of *Lupinus tidestromii* from Point Reyes National Seashore, collected from 2008 to 2018.
+This repository contains scripts for analyzing uncertainty in integral projection models of *Lupinus tidestromii* from Point Reyes National Seashore, collected from 2005 to 2018. Models are adapted from [Compagnoni et al. 2021](https://doi.org/10.1002/ecs2.3454).
 
 ### Data Availability
 
