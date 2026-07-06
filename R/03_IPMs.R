@@ -495,6 +495,13 @@ lambda_mean( pars_mean3 )
 # ipmr model predicts 0.004% greater than hand-built IPM, which is tolerable
 
 
+# Put mean model lambda values in a dataframe for plotting
+
+mean_lambdas <- data.frame( model = c( 2, 3 ),
+                            mean_lambda = c( lambda( lupinus_ipm2 ),
+                                             lambda( lupinus_ipm3 ) ) )
+
+
 # Sensitivity & elasticity analysis --------------------------------------------
 
 # Function to perform sensitivity analysis on hand-built IPMs
@@ -543,4 +550,9 @@ pars_var3 <- c( "surv_b0", "surv_b1", "surv_b2", "surv_b3",
 
 sens_elas2 <- sens( pars_mean2, pars_list = pars_var2 )
 sens_elas3 <- sens( pars_mean3, pars_list = pars_var3 )
+
+
+# Save outputs -----------------------------------------------------------------
+
+write.csv( mean_lambdas, "data/mean_lambdas.csv", row.names = FALSE )
 
