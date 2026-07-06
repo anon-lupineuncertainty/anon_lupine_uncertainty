@@ -490,8 +490,6 @@ extr_pars <- function( type ){
   return( pars_mean )
 }
 
-pars_mean2 <- extr_pars( "2" )
-pars_mean3 <- extr_pars( "3" )
 
 
 # Exporting model formulae -----------------------------------------------------
@@ -565,7 +563,7 @@ model_vr <- function( datlist, mf, type ){
 }
 
 
-# Checking functionalty
+# Generating lists of parameter values
 
 # Can use setup_vr_list and full dataframe to generate list input needed
 
@@ -580,11 +578,8 @@ vr_list <- list( surv  = surv,
                  abort = abort,
                  cons  = cons )
 
-pars_mean2_test <- model_vr( vr_list, mf_mean2, "2" )
-pars_mean3_test <- model_vr( vr_list, mf_mean3, "3" )
-
-all.equal( pars_mean2, pars_mean2_test )
-all.equal( pars_mean3, pars_mean3_test )
+pars_mean2 <- model_vr( vr_list, mf_mean2, "2" )
+pars_mean3 <- model_vr( vr_list, mf_mean3, "3" )
 
 
 # Save outputs -----------------------------------------------------------------
