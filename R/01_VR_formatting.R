@@ -11,7 +11,7 @@
 #
 # Inputs:
   # - data/lupine_df.csv: Full demographic dataset
-  # - data/seedbaskets.xlsx: Experimentally-collected recruitment dataset
+  # - data/seedbaskets.csv: Experimentally-collected recruitment dataset
   # - data/seedl_size.csv: Recruitment size summary statistics
 #
 # Outputs:
@@ -42,7 +42,7 @@ library( binom )
 # Data -------------------------------------------------------------------------
 
 lupine_df   <- read.csv( "data/lupine_df.csv" )
-germ        <- read_xlsx( "data/seedbaskets.xlsx" )
+germ        <- read.csv( "data/seedbaskets.csv" )
 sl_size     <- read.csv( "data/seedl_size.csv" )
 
 

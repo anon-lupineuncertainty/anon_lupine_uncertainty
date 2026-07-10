@@ -9,7 +9,7 @@
   # the optimal number of germination trials to conduct in the field.
 #
 # Inputs:
-  # - data/seedbaskets.xlsx: Experimentally-collected recruitment dataset
+  # - data/seedbaskets.csv: Experimentally-collected recruitment dataset
   # - data/pars_sample2.csv: Sampled parameter values with quadratic survival model
 #
 # Outputs:
@@ -30,7 +30,7 @@ library( extraDistr )
 
 # Data -------------------------------------------------------------------------
 
-germ_r <- read_xlsx( "data/seedbaskets.xlsx" )
+germ_r <- read.csv( "data/seedbaskets.csv" )
 s_pars <- read.csv( "data/pars_sample2.csv" )
 
 
@@ -361,7 +361,8 @@ uncert_it <- function( i, df ){
   return( uncert_out )
 }
 
-g_uncert6 <- lapply( 1:2, uncert_it, germ6_c ) %>% bind_rows() # this took like 25min
+g_uncert6 <- lapply( 1:100, uncert_it, germ6_c ) %>% bind_rows()
+g_uncert10 <- lapply( 1:100, uncert_it, germ10_c ) %>% bind_rows()
 
 
 # Save output ------------------------------------------------------------------

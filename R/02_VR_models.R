@@ -19,7 +19,7 @@
   # - data/cons.csv: Full demographic dataset, subsetted for raceme consumption model
   # - data/other_pars.csv: Dataframe of constant parameters for IPM construction
   # - data/fruits_per_raceme.csv: Experimentally-collected reproduction data
-  # - data/seedsperfruit.csv: Experimentally-collected reproduction data
+  # - data/seeds_per_fruit.csv: Experimentally-collected reproduction data
   # - data/seedl_size.csv: Recruitment size summary statistics
   # - data/germ_adj_factor.csv: Germination adjustment factors
 #
@@ -58,8 +58,8 @@ load_vr_dat <- function( ){
 
 load_vr_dat()
 
-fruit_rac   <- read_xlsx( "data/fruits_per_raceme.xlsx" )
-seed_x_fr   <- read_xlsx( "data/seedsperfruit.xlsx" )
+fruit_rac   <- read.csv( "data/fruits_per_raceme.csv" )
+seed_x_fr   <- read.csv( "data/seeds_per_fruit.csv" )
 sl_size     <- read.csv( "data/seedl_size.csv" )
 germ_adj    <- read.csv( "data/germ_adj_factor.csv" )
 

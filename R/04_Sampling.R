@@ -10,7 +10,7 @@
 #
 # Inputs:
   # - data/lupine_df.csv: Full demographic dataset
-  # - data/seedbaskets.xlsx: Experimentally-collected recruitment dataset
+  # - data/seedbaskets.csv: Experimentally-collected recruitment dataset
   # - data/pars_mean2.csv: Parameters needed to construct mean IPM with quadratic survival model
   # - data/pars_mean3.csv: Parameters needed to construct mean IPM with cubic survival model
   # - data/mf_mean2.csv: Model formulae of vital rates with quadratic survival model
@@ -32,7 +32,7 @@ library( tidyverse )
 # Data -------------------------------------------------------------------------
 
 lupine_df    <- read.csv( "data/lupine_df.csv" )
-germ         <- read_xlsx( "data/seedbaskets.xlsx" ) %>% 
+germ         <- read.csv( "data/seedbaskets.csv" ) %>% 
   select( g0:g2 )
 pars_mean2    <- read.csv( "data/pars_mean2.csv" )
 pars_mean3    <- read.csv( "data/pars_mean3.csv" )
