@@ -57,10 +57,7 @@ setup_vr_surv <- function( df ){
   surv        <- subset( df, !is.na( surv_t1 ) ) %>%
     
     subset( area_t0     != 0 ) %>%
-    mutate( log_area_t0  = log( area_t0 ),
-            year         = year + 1 ) %>% 
-    mutate( log_area_t02 = log_area_t0^2,
-            log_area_t03 = log_area_t0^3 ) 
+    mutate( year         = year + 1 )
   
   return( surv )
   
@@ -77,10 +74,7 @@ setup_vr_grow <- function( df ){
     subset( !( stage_t0 %in% c( "DORM", "NF" ) ) & 
               !( stage_t1 %in% c( "D", "NF", "DORM" ) ) ) %>% 
     subset( area_t0     != 0 ) %>%
-    subset( area_t1     != 0 ) %>% 
-    mutate( log_area_t1  = log( area_t1 ),
-            log_area_t0  = log( area_t0 ),
-            log_area_t02 = log( area_t0 )^2 )
+    subset( area_t1     != 0 )
   
   return( grow )
   
@@ -99,9 +93,7 @@ setup_vr_flow    <- function( df ){
   flow           <- subset( df, !is.na( flow_t0 ) ) %>% 
     
     subset( area_t0     != 0 ) %>% 
-    mutate( log_area_t0  = log( area_t0 ),
-            log_area_t02 = log( area_t0 )^2,
-            year         = year + 1 )
+    mutate( year         = year + 1 )
   
   return( flow )
   
@@ -118,9 +110,7 @@ setup_vr_fert    <- function( df ){
     subset( area_t0 != 0) %>% 
     subset( !is.na( numrac_t0 ) ) %>% 
     subset( !( flow_t0 %in% 0 ) ) %>% 
-    mutate( log_area_t0  = log( area_t0 ),
-            log_area_t02 = log( area_t0 )^2,
-            year         = year + 1 ) %>%
+    mutate( year = year + 1 ) %>%
     subset( !( numrac_t0 %in% 0 ) )
   
   return( fert )
@@ -140,7 +130,6 @@ setup_vr_abort    <- function( df ){
     subset( !is.na( numrac_t0 ) ) %>%
     subset( !is.na( numab_t0 ) ) %>%
     subset( !( flow_t0 %in% 0 ) ) %>% 
-    mutate( log_area_t02 = log( area_t0 )^2 ) %>% 
     subset( !( numrac_t0 %in% 0 ) ) %>%
     subset( year %in% c( 2010, 2011, 2013:2018 ) )
   
@@ -159,9 +148,7 @@ setup_vr_cons     <- function( df ){
     subset( area_t1 != 0 ) %>% 
     subset( !is.na( numrac_t1 ) ) %>%
     subset( !( flow_t1 %in% 0 ) ) %>% 
-    mutate( log_area_t1  = log( area_t1 ), 
-            log_area_t12 = log( area_t1 )^2,
-            year         = year + 1 ) %>% 
+    mutate( year = year + 1 ) %>% 
     subset( !( numrac_t1 %in% 0 ) )
   
   return( cons )
