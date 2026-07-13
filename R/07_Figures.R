@@ -74,6 +74,7 @@ fig3a <- ggplot( ) +
             aes( x = mod, y = variance_sum, alpha = "Model uncertainty" ), 
             stat = "identity", position = "stack", color = "black", fill = NA,
             linewidth = 0.8, width = 0.7 ) +
+  scale_y_sqrt() +
   scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
                      labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
                      guide = "legend" ) +
@@ -82,6 +83,7 @@ fig3a <- ggplot( ) +
                       breaks = "Model uncertainty",
                       guide = guide_legend( override.aes = list( color = "black" ) )
   ) +
+  scale_x_discrete( labels = c( "Constant", "Varying (resampled)" ) ) +
   guides( fill = guide_legend( "Vital rate contribution" ) ) +
   labs( x = "Recruitment parameters", 
         y = "Uncertainty",
