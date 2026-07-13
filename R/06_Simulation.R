@@ -23,7 +23,6 @@
 # ==============================================================================
 
 options( stringsAsFactors = F )
-library( readxl )
 library( tidyverse )
 library( extraDistr )
 
