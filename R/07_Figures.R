@@ -34,12 +34,15 @@ library( ggsignif )
 
 # Data -------------------------------------------------------------------------
 
-surv    <- read.csv( "data/surv.csv" )
+uncert2    <- readRDS( "data/uncert2.rds" )
+uncert2_ng <- readRDS( "data/uncert2_ng.rds" )
+uncert3    <- readRDS( "data/uncert3.rds" )
 
-uncert2 <- readRDS( "data/uncert2.rds" )
-uncert3 <- readRDS( "data/uncert3.rds" )
+uncert_comp_plot <- read.csv( "data/uncert_comp_plot.csv" )
 
 mean_lambdas <- read.csv( "data/mean_lambdas.csv" )
+
+surv    <- read.csv( "data/surv.csv" )
 
 s_pars2 <- read.csv( "data/pars_sample2.csv" )
 s_pars3 <- read.csv( "data/pars_sample3.csv" )
@@ -58,7 +61,97 @@ fig1 <- plot( uncert2, type = "param" )
 fig2 <- plot( uncert2, type = "vr" )
 
 
+# Figure 3 --------------------------------------------------------------------
+
+# Figure 3a: comparison of explained uncertainty with recruitment parameters
+  # varying and constant
+
+fig3a <- ggplot( ) + 
+  geom_bar( data = uncert_comp_plot[which(uncert_comp_plot$vital_rate != "total" ),], 
+            aes( x = mod, y = variance_sum, fill = vital_rate ), 
+            stat = "identity", position = "stack", width = 0.7 ) +
+  geom_bar( data = uncert_comp_plot[which(uncert_comp_plot$vital_rate == "total" ),], 
+            aes( x = mod, y = variance_sum, alpha = "Model uncertainty" ), 
+            stat = "identity", position = "stack", color = "black", fill = NA,
+            linewidth = 0.8, width = 0.7 ) +
+  scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
+                     labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
+                     guide = "legend" ) +
+  scale_alpha_manual( name = NULL,
+                      values = 1,
+                      breaks = "Model uncertainty",
+                      guide = guide_legend( override.aes = list( color = "black" ) )
+  ) +
+  guides( fill = guide_legend( "Vital rate contribution" ) ) +
+  labs( x = "Recruitment parameters", 
+        y = "Uncertainty",
+        fill = "Vital rate contribution" ) +
+  theme_bw( )
+
+
+# Figure 3b: comparison of sampled and mean lambda values, with recruitment
+  # parameters varying and constant
+
+lam_tab2 <- uncert2$lambdas
+lam_tab2$mod <- "With varying recruitment"
+
+lam_tab_ng <- uncert2_ng$lambdas
+lam_tab_ng$mod <- "With constant recruitment"
+
+lam_tab <- bind_rows( lam_tab2, lam_tab_ng )
+
+lam_t <- t.test( lambda ~ type, data = lam_tab )
+
+fig3b <- ggplot() +
+  geom_violin( data = lam_tab, aes( x = factor( mod ), y = lambda,
+                                    fill = factor( mod ) ),
+               color = NA, alpha = 0.4 ) +
+  geom_signif( data = lam_tab, aes( x = factor( mod ), y = lambda ),
+               comparisons = list( c("With varying recruitment","With constant recruitment")),
+               map_signif_level = TRUE ) +
+  scale_fill_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
+  geom_segment( aes( x = 0.55, y = mean( lam_tab2$lambda ), 
+                     xend = 1.45, yend = mean( lam_tab2$lambda ),
+                     alpha = "Mean of samples" ),
+                size = 0.9, color = "#f5a351" ) +
+  geom_segment( aes( x = 1.55, y = mean( lam_tab_ng$lambda ), 
+                     xend = 2.45, yend = mean( lam_tab_ng$lambda ) ),
+                size = 0.9, color = "#a85603"  ) +
+  geom_point( data = mean_lam[c(1,3),], aes( x = factor( type ), y = value,
+                                             color = factor( type ), 
+                                             alpha = "Mean model" ),
+              cex = 2, pch = 16 ) +
+  scale_color_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
+  scale_x_discrete( labels = model_labs ) +
+  scale_alpha_manual( name = NULL,
+                      values = c( 1, 1 ),
+                      breaks = c( "Mean model", "Mean of samples" ),
+                      guide = guide_legend( override.aes = list( linetype = c(0,1),
+                                                                 shape = c(16,NA),
+                                                                 color = "#D0873C" ) )
+  ) +
+  ylim( min( lam_tab$lambda ) - 0.03, max( lam_tab$lambda ) + 0.3 ) +
+  labs( x = "Survival model", 
+        y = "Lambda",
+        title = "(a)" ) +
+  theme_bw( )
+
+
 # Figure 3 ---------------------------------------------------------------------
+
+model_labs <- c( "Quadratic", "Cubic" )
+
+lam_tab2 <- uncert2$lambdas
+lam_tab2$type <- 2
+
+lam_tab3 <- uncert3$lambdas
+lam_tab3$type <- 3
+
+lam_tab <- bind_rows( lam_tab2, lam_tab3 )
+
+lam_t <- t.test( lambda ~ type, data = lam_tab )
+
+# need to update this to rely on mean_lambdas instead of mean_lam
 
 # Figure 3a
 
