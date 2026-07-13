@@ -27,6 +27,7 @@
 
 options( stringsAsFactors = F )
 library( tidyverse )
+library( rstatix )
 
 
 # Data -------------------------------------------------------------------------
@@ -182,10 +183,136 @@ names( pars_s2 ) <- gsub( "_2$", "", names( pars_s2 ) )
 names( pars_s3 ) <- gsub( "_3$", "", names( pars_s3 ) )
 
 
+# Parameter correlations for plotting ------------------------------------------
+
+# Function to replace zeroes in sampled parameter values
+  # Default value 1e-3
+
+repl_zero <- function( df, value = 1e-3 ){
+  
+  df[which(df$g2 == 0),"g2"] <- value
+  df[which(df$g1 == 0),"g1"] <- value
+  df[which(df$g0 == 0),"g0"] <- value
+  
+  return( df )
+}
+
+s_pars2 <- repl_zero( pars_s2 )
+s_pars3 <- repl_zero( pars_s3 )
+
+
+# Parameters which vary between samples
+
+pars_var2   <- c( "surv_b0", "surv_b1", "surv_b2", 
+                  "grow_b0", "grow_b1", "grow_sig",
+                  "abort", "clip",
+                  "flow_b0", "flow_b1",
+                  "fert_b0", "fert_b1",
+                  "g0", "g1", "g2" )
+
+pars_var3   <- c( "surv_b0", "surv_b1", "surv_b2", "surv_b3", 
+                  "grow_b0", "grow_b1", "grow_sig",
+                  "abort", "clip",
+                  "flow_b0", "flow_b1",
+                  "fert_b0", "fert_b1",
+                  "g0", "g1", "g2" )
+
+# Parameter covariance matrices
+
+corr2 <- cor( s_pars2[,c(pars_var2,"g_adj")] )
+corr3 <- cor( s_pars3[,c(pars_var3,"g_adj")] )
+
+corr2_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(corr2),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+corr3_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(corr3),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+sig2_tbl <- cor_pmat( s_pars2[,c(pars_var2,"g_adj")] )
+sig2 <- as.matrix(sig2_tbl[, -1])
+rownames(sig2) <- sig2_tbl$rowname
+sig3_tbl <- cor_pmat( s_pars3[,c(pars_var3,"g_adj")] )
+sig3 <- as.matrix(sig3_tbl[, -1])
+rownames(sig3) <- sig3_tbl$rowname
+
+sig2_star <- sig2
+sig3_star <- sig3
+
+for( i in 1:length(sig2)){
+  if(sig2[i] < 0.001){
+    sig2_star[i] <- "***"
+  } else {
+    if(sig2[i] < 0.01){
+      sig2_star[i] <- "**"
+    } else {
+      if(sig2[i] < 0.05){
+        sig2_star[i] <- "*"
+      } else 
+        sig2_star[i] <- ""
+    }
+  }
+}
+
+for( i in 1:length(sig3)){
+  if(sig3[i] < 0.001){
+    sig3_star[i] <- "***"
+  } else {
+    if(sig3[i] < 0.01){
+      sig3_star[i] <- "**"
+    } else {
+      if(sig3[i] < 0.05){
+        sig3_star[i] <- "*"
+      } else 
+        sig3_star[i] <- ""
+    }
+  }
+}
+
+star2_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(sig2_star),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+star3_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(sig3_star),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+corr2_plot$text <- star2_plot$correlation
+corr3_plot$text <- star3_plot$correlation
+
+
 # Save output ------------------------------------------------------------------
 
 # Dataframes
 
 write.csv( pars_s2, "data/pars_sample2.csv", row.names = F )
 write.csv( pars_s3, "data/pars_sample3.csv", row.names = F )
+
+write.csv( corr2_plot, "data/corr_plot2.csv", row.names = F )
+write.csv( corr3_plot, "data/corr_plot3.csv", row.names = F )
 

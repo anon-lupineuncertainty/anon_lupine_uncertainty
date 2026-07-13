@@ -44,6 +44,9 @@ mean_lambdas <- read.csv( "data/mean_lambdas.csv" )
 s_pars2 <- read.csv( "data/pars_sample2.csv" )
 s_pars3 <- read.csv( "data/pars_sample3.csv" )
 
+corr2_plot <- read.csv( "data/corr_plot2.csv" )
+corr3_plot <- read.csv( "data/corr_plot3.csv" )
+
 
 # Figure 1 ---------------------------------------------------------------------
 
@@ -58,24 +61,6 @@ fig2 <- plot( uncert2, type = "vr" )
 # Figure 3 ---------------------------------------------------------------------
 
 # Figure 3a
-
-model_labs <- c( "Quadratic", "Cubic" )
-
-lam_tab2 <- uncert2$lambdas
-lam_tab2$type <- 2
-
-lam_tab3 <- uncert3$lambdas
-lam_tab3$type <- 3
-
-lam_tab <- bind_rows( lam_tab2, lam_tab3 )
-
-lam_t <- t.test( lambda ~ type, data = lam_tab )
-
-mean_lam <- data.frame( type  = c( 2, 2, 3, 3 ),
-                        model = c( "Mean model", "Mean of sampled models",
-                                   "Mean model", "Mean of sampled models" ),
-                        value = c( mean_lambdas[1,2], mean( lam_tab2$lambda ),
-                                   mean_lambdas[2,2], mean( lam_tab3$lambda ) ) )
 
 fig3a <- ggplot() +
   geom_violin( data = lam_tab, aes( x = factor( type ), y = lambda,
@@ -414,90 +399,6 @@ fig3_ng <- wrap_plots( fig3ab_ng ) + wrap_plots( fig3cd ) +
 
 
 # Figure S1 --------------------------------------------------------------------
-
-# Parameter covariance matrices
-
-corr2 <- cor( s_pars2[,c(pars_var2,"g_adj")] )
-corr3 <- cor( s_pars3[,c(pars_var3,"g_adj")] )
-
-corr2_plot <- pivot_longer(
-  tibble::rownames_to_column(
-    as.data.frame(corr2),
-    "Var1"
-  ),
-  -Var1,
-  names_to = "Var2",
-  values_to = "correlation"
-)
-
-corr3_plot <- pivot_longer(
-  tibble::rownames_to_column(
-    as.data.frame(corr3),
-    "Var1"
-  ),
-  -Var1,
-  names_to = "Var2",
-  values_to = "correlation"
-)
-
-sig2 <- cor_pmat( s_pars2[,c(pars_var2,"g_adj")] )
-sig3 <- cor_pmat( s_pars3[,c(pars_var3,"g_adj")] )
-
-sig2_star <- sig2
-sig3_star <- sig3
-
-for( i in 1:length(sig2)){
-  if(sig2[i] < 0.001){
-    sig2_star[i] <- "***"
-  } else {
-    if(sig2[i] < 0.01){
-      sig2_star[i] <- "**"
-    } else {
-      if(sig2[i] < 0.05){
-        sig2_star[i] <- "*"
-      } else 
-        sig2_star[i] <- ""
-    }
-  }
-}
-
-for( i in 1:length(sig3)){
-  if(sig3[i] < 0.001){
-    sig3_star[i] <- "***"
-  } else {
-    if(sig3[i] < 0.01){
-      sig3_star[i] <- "**"
-    } else {
-      if(sig3[i] < 0.05){
-        sig3_star[i] <- "*"
-      } else 
-        sig3_star[i] <- ""
-    }
-  }
-}
-
-star2_plot <- pivot_longer(
-  tibble::rownames_to_column(
-    as.data.frame(sig2_star),
-    "Var1"
-  ),
-  -Var1,
-  names_to = "Var2",
-  values_to = "correlation"
-)
-
-star3_plot <- pivot_longer(
-  tibble::rownames_to_column(
-    as.data.frame(sig3_star),
-    "Var1"
-  ),
-  -Var1,
-  names_to = "Var2",
-  values_to = "correlation"
-)
-
-corr2_plot$text <- star2_plot$correlation
-corr3_plot$text <- star3_plot$correlation
 
 figs1a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
   geom_tile() +
