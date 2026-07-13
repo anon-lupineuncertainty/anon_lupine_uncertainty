@@ -360,8 +360,62 @@ uncert_it <- function( i, df ){
   return( uncert_out )
 }
 
-g_uncert6 <- lapply( 1:100, uncert_it, germ6_c ) %>% bind_rows()
-g_uncert10 <- lapply( 1:100, uncert_it, germ10_c ) %>% bind_rows()
+g_uncert6   <- lapply( 1:100, uncert_it, germ6_c ) %>% bind_rows()
+g_uncert10  <- lapply( 1:100, uncert_it, germ10_c ) %>% bind_rows()
+g_uncert20  <- lapply( 1:100, uncert_it, germ20_c ) %>% bind_rows()
+g_uncert30  <- lapply( 1:100, uncert_it, germ30_c ) %>% bind_rows()
+g_uncert40  <- lapply( 1:100, uncert_it, germ40_c ) %>% bind_rows()
+g_uncert50  <- lapply( 1:100, uncert_it, germ50_c ) %>% bind_rows()
+g_uncert75  <- lapply( 1:100, uncert_it, germ75_c ) %>% bind_rows()
+g_uncert100 <- lapply( 1:100, uncert_it, germ100_c ) %>% bind_rows()
+g_uncert200 <- lapply( 1:100, uncert_it, germ200_c ) %>% bind_rows()
+g_uncert500 <- lapply( 1:100, uncert_it, germ500_c ) %>% bind_rows()
+
+
+# Calculate parameter correlations for plotting --------------------------------
+
+pars_varg   <- c( "surv_b0", "surv_b1", "surv_b2", 
+                  "grow_b0", "grow_b1", "grow_sig",
+                  "abort", "clip",
+                  "flow_b0", "flow_b1",
+                  "fert_b0", "fert_b1",
+                  "g0", "g1", "g2", "g_adj" )
+
+# Function to iteratively calculate parameter correlations on subsets of sampled
+  # parameter values
+
+corr_it <- function( i, df ){
+  
+  pars_temp <- df[which(df$rep == i),]
+  
+  corr_temp <- cor( df[,c(pars_varg)] )
+  
+  corr_out <- pivot_longer(
+    tibble::rownames_to_column(
+      as.data.frame(corr_temp),
+      "Var1"
+    ),
+    -Var1,
+    names_to = "Var2",
+    values_to = "correlation"
+  )
+  
+  corr_out$rep <- i
+  
+  return( corr_out )
+}
+
+g_corr6   <- lapply( 1:100, corr_it, germ6_c ) %>% bind_rows()
+g_corr10  <- lapply( 1:100, corr_it, germ10_c ) %>% bind_rows()
+g_corr20  <- lapply( 1:100, corr_it, germ20_c ) %>% bind_rows()
+g_corr30  <- lapply( 1:100, corr_it, germ30_c ) %>% bind_rows()
+g_corr40  <- lapply( 1:100, corr_it, germ40_c ) %>% bind_rows()
+g_corr50  <- lapply( 1:100, corr_it, germ50_c ) %>% bind_rows()
+g_corr75  <- lapply( 1:100, corr_it, germ75_c ) %>% bind_rows()
+g_corr100 <- lapply( 1:100, corr_it, germ100_c ) %>% bind_rows()
+g_corr200 <- lapply( 1:100, corr_it, germ200_c ) %>% bind_rows()
+g_corr500 <- lapply( 1:100, corr_it, germ500_c ) %>% bind_rows()
+
 
 
 # Save output ------------------------------------------------------------------
@@ -377,6 +431,17 @@ write.csv( bind_rows(germ100), "data/pars_gsim100.csv", row.names = F )
 write.csv( bind_rows(germ200), "data/pars_gsim200.csv", row.names = F )
 write.csv( bind_rows(germ500), "data/pars_gsim500.csv", row.names = F )
 
+write.csv( g_uncert6, "data/uncert_g6.csv", row.names = F )
+write.csv( g_uncert10, "data/uncert_g10.csv", row.names = F )
+write.csv( g_uncert20, "data/uncert_g20.csv", row.names = F )
+write.csv( g_uncert30, "data/uncert_g30.csv", row.names = F )
+write.csv( g_uncert40, "data/uncert_g40.csv", row.names = F )
+write.csv( g_uncert50, "data/uncert_g50.csv", row.names = F )
+write.csv( g_uncert75, "data/uncert_g75.csv", row.names = F )
+write.csv( g_uncert100, "data/uncert_g100.csv", row.names = F )
+write.csv( g_uncert200, "data/uncert_g200.csv", row.names = F )
+write.csv( g_uncert500, "data/uncert_g500.csv", row.names = F )
+
 
 germ6   <- read.csv( "data/pars_gsim6.csv" )
 germ10  <- read.csv( "data/pars_gsim10.csv" )
@@ -388,3 +453,15 @@ germ75  <- read.csv( "data/pars_gsim75.csv" )
 germ100 <- read.csv( "data/pars_gsim100.csv" )
 germ200 <- read.csv( "data/pars_gsim200.csv" )
 germ500 <- read.csv( "data/pars_gsim500.csv" )
+
+g_uncert6   <- read.csv( "data/uncert_g6.csv" )
+g_uncert10  <- read.csv( "data/uncert_g10.csv" )
+g_uncert20  <- read.csv( "data/uncert_g20.csv" )
+g_uncert30  <- read.csv( "data/uncert_g30.csv" )
+g_uncert40  <- read.csv( "data/uncert_g40.csv" )
+g_uncert50  <- read.csv( "data/uncert_g50.csv" )
+g_uncert75  <- read.csv( "data/uncert_g75.csv" )
+g_uncert100 <- read.csv( "data/uncert_g100.csv" )
+g_uncert200 <- read.csv( "data/uncert_g200.csv" )
+g_uncert500 <- read.csv( "data/uncert_g500.csv" )
+
