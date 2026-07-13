@@ -300,6 +300,114 @@ fig3 <- wrap_plots( fig3ab ) + wrap_plots( fig3cd ) +
   plot_layout( ncol = 2, widths = c(1,2) ) & base_theme
 
 
+# Figure 3 ---------------------------------------------------------------------
+
+# Revised version of Figure 3, visualizing the uncertainty analyses holding the
+  # germination coefficients constant
+# Clean up or remove later
+
+# Figure 3a
+
+lam_tab2_ng <- uncert2_ng$lambdas
+lam_tab2_ng$type <- 2
+
+lam_tab3_ng <- uncert3_ng$lambdas
+lam_tab3_ng$type <- 3
+
+lam_tab_ng <- bind_rows( lam_tab2_ng, lam_tab3_ng )
+
+lam_t_ng <- t.test( lambda ~ type, data = lam_tab_ng )
+
+mean_lam_ng <- data.frame( type  = c( 2, 2, 3, 3 ),
+                        model = c( "Mean model", "Mean of sampled models",
+                                   "Mean model", "Mean of sampled models" ),
+                        value = c( mean_lambdas[1,2], mean( lam_tab2_ng$lambda ),
+                                   mean_lambdas[2,2], mean( lam_tab3_ng$lambda ) ) )
+
+fig3a_ng <- ggplot() +
+  geom_violin( data = lam_tab_ng, aes( x = factor( type ), y = lambda,
+                                    fill = factor( type ) ),
+               color = NA, alpha = 0.4 ) +
+  geom_signif( data = lam_tab_ng, aes( x = factor( type ), y = lambda ),
+               comparisons = list( c("2","3")),
+               map_signif_level = TRUE ) +
+  scale_fill_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
+  geom_segment( aes( x = 0.55, y = mean_lam_ng[2,3], 
+                     xend = 1.45, yend = mean_lam_ng[2,3],
+                     alpha = "Mean of samples" ),
+                size = 0.9, color = "#f5a351" ) +
+  geom_segment( aes( x = 1.55, y = mean_lam_ng[4,3], 
+                     xend = 2.45, yend = mean_lam_ng[4,3] ),
+                size = 0.9, color = "#a85603"  ) +
+  geom_point( data = mean_lam_ng[c(1,3),], aes( x = factor( type ), y = value,
+                                             color = factor( type ), 
+                                             alpha = "Mean model" ),
+              cex = 2, pch = 16 ) +
+  scale_color_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
+  scale_x_discrete( labels = model_labs ) +
+  scale_alpha_manual( name = NULL,
+                      values = c( 1, 1 ),
+                      breaks = c( "Mean model", "Mean of samples" ),
+                      guide = guide_legend( override.aes = list( linetype = c(0,1),
+                                                                 shape = c(16,NA),
+                                                                 color = "#D0873C" ) )
+  ) +
+  ylim( min( lam_tab_ng$lambda ) - 0.03, max( mean_lam_ng$value ) + 0.3 ) +
+  labs( x = "Survival model", 
+        y = "Lambda",
+        title = "(a)" ) +
+  theme_bw( )
+
+# Figure 3b
+
+var_tab2_ng <- uncert2_ng$vr_uncert
+var_tab2_ng[4,] <- list( "total", uncert2_ng$mod_uncert )
+var_tab2_ng$type <- 2
+
+var_tab3_ng <- uncert3_ng$vr_uncert
+var_tab3_ng[4,] <- list( "total", uncert3_ng$mod_uncert )
+var_tab3_ng$type <- 3
+
+var_tab_ng <- bind_rows( var_tab2_ng, var_tab3_ng )
+
+
+fig3b_ng <- ggplot( ) + 
+  geom_bar( data = var_tab_ng[which(var_tab_ng$vital_rate != "total" ),], 
+            aes( x = type, y = variance_sum, fill = vital_rate ), 
+            stat = "identity", position = "stack", width = 0.7 ) +
+  geom_bar( data = var_tab_ng[which(var_tab_ng$vital_rate == "total" ),], 
+            aes( x = type, y = variance_sum, alpha = "Model uncertainty" ), 
+            stat = "identity", position = "stack", color = "black", fill = NA,
+            linewidth = 0.8, width = 0.7 ) +
+  scale_fill_manual( values = c( "#8FB339", "#7A5195", "#D0873C" ),
+                     labels = c( "Growth", "Reproduction", "Survival" ),
+                     guide = "legend" ) +
+  scale_x_continuous( breaks = c( 2, 3 ), labels = model_labs ) +
+  scale_alpha_manual( name = NULL,
+                      values = 1,
+                      breaks = "Model uncertainty",
+                      guide = guide_legend( override.aes = list( color = "black" ) )
+  ) +
+  guides( fill = guide_legend( "Vital rate contribution" ) ) +
+  labs( x = "Survival model", 
+        y = "Uncertainty",
+        title = "(b)",
+        fill = "Vital rate contribution" ) +
+  theme_bw( )
+
+# Figure 3, all together
+
+fig3ab_ng <- fig3a_ng + fig3b_ng + plot_layout( ncol = 1, axes = "collect_x" )
+
+fig3cd <- fig3c + fig3d + plot_layout( ncol = 1, axes = "collect" )
+
+fig3_ng <- wrap_plots( fig3ab_ng ) + wrap_plots( fig3cd ) + 
+  plot_layout( ncol = 2, widths = c(1,2) ) & base_theme
+
+
+
+
+
 # Figure 4 ---------------------------------------------------------------------
 
 

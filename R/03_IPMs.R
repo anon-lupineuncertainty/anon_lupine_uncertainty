@@ -495,11 +495,26 @@ lambda_mean( pars_mean3 )
 # ipmr model predicts 0.004% greater than hand-built IPM, which is tolerable
 
 
+# kernels: Kernel structure in row major order
+
+ker <- c( "SB1_SB1", "SB2_SB1", "enter_SB1",
+          "SB1_SB2", "SB2_SB2", "enter_SB2",
+          "SB1_germ", "SB2_germ", "P", "repr" )
+
+ker_base2 <- make_iter_kernel(lupinus_ipm2, mega_mat = ker)
+mat_base2 <- ker_base2[[1]]
+ker_base3 <- make_iter_kernel(lupinus_ipm3, mega_mat = ker)
+mat_base3 <- ker_base3[[1]]
+
+lambda_base2 <- Re(eigen(mat_base2, only.values = TRUE)$values[1])
+lambda_base3 <- Re(eigen(mat_base3, only.values = TRUE)$values[1])
+
+
 # Put mean model lambda values in a dataframe for plotting
 
 mean_lambdas <- data.frame( model = c( 2, 3 ),
-                            mean_lambda = c( lambda( lupinus_ipm2 ),
-                                             lambda( lupinus_ipm3 ) ) )
+                            mean_lambda = c( lambda_base2,
+                                             lambda_base3 ) )
 
 
 # Sensitivity & elasticity analysis --------------------------------------------

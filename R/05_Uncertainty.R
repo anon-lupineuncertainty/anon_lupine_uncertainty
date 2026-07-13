@@ -30,6 +30,8 @@ library( ipmr )
 s_pars2 <- read.csv( "data/pars_sample2.csv" )
 s_pars3 <- read.csv( "data/pars_sample3.csv" )
 
+mean_lambdas <- read.csv( "data/mean_lambdas.csv" )
+
 
 # Initializing ipmr objects ----------------------------------------------------
 
@@ -381,8 +383,82 @@ uncert3 <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3, samples = s_pars3,
                         kernels = ker, vr_table = vr_tab3, cores = 3 )
 
 
+# Mean of sampled lambdas for plotting -----------------------------------------
+
+model_labs <- c( "Quadratic", "Cubic" )
+
+lam_tab2 <- uncert2$lambdas
+lam_tab2$type <- 2
+
+lam_tab3 <- uncert3$lambdas
+lam_tab3$type <- 3
+
+lam_tab <- bind_rows( lam_tab2, lam_tab3 )
+
+lam_t <- t.test( lambda ~ type, data = lam_tab )
+
+mean_lam <- data.frame( type  = c( 2, 2, 3, 3 ),
+                        model = c( "Mean model", "Mean of sampled models",
+                                   "Mean model", "Mean of sampled models" ),
+                        value = c( mean_lambdas[1,2], mean( lam_tab2$lambda ),
+                                   mean_lambdas[2,2], mean( lam_tab3$lambda ) ) )
+
+
+# Holding germination constant -------------------------------------------------
+
+# Uncertainty analysis, holding germination coefficients constant
+  # Clean up or remove later
+
+pars_mean2    <- read.csv( "data/pars_mean2.csv" )
+pars_mean3    <- read.csv( "data/pars_mean3.csv" )
+
+s_pars2_ng <- s_pars2
+s_pars3_ng <- s_pars3
+
+s_pars2_ng$g0 <- pars_mean2$g0
+s_pars2_ng$g1 <- pars_mean2$g1
+s_pars2_ng$g2 <- pars_mean2$g2
+
+s_pars3_ng$g0 <- pars_mean3$g0
+s_pars3_ng$g1 <- pars_mean3$g1
+s_pars3_ng$g2 <- pars_mean3$g2
+
+pars_var2_ng <- c( "surv_b0", "surv_b1", "surv_b2", 
+                  "grow_b0", "grow_b1", "grow_sig",
+                  "abort", "clip",
+                  "flow_b0", "flow_b1",
+                  "fert_b0", "fert_b1" )
+
+pars_var3_ng <- c( "surv_b0", "surv_b1", "surv_b2", "surv_b3", 
+                  "grow_b0", "grow_b1", "grow_sig",
+                  "abort", "clip",
+                  "flow_b0", "flow_b1",
+                  "fert_b0", "fert_b1" )
+
+vr_tab2_ng <- data.frame( parameter = pars_var2_ng,
+                       vital_rate = c( rep( "survival", 3 ),
+                                       rep( "growth", 3 ),
+                                       rep( "reproduction", 6 ) ) )
+
+vr_tab3_ng <- data.frame( parameter = pars_var3_ng,
+                       vital_rate = c( rep( "survival", 4 ),
+                                       rep( "growth", 3 ),
+                                       rep( "reproduction", 6 ) ) )
+
+uncert2_ng <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2_ng, 
+                           samples = s_pars2_ng, kernels = ker,
+                           vr_table = vr_tab2_ng, cores = 3 )
+uncert3_ng <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3_ng,
+                           samples = s_pars3_ng, kernels = ker,
+                           vr_table = vr_tab3_ng, cores = 3 )
+
+
+
+
 # Save output ------------------------------------------------------------------
 
 saveRDS( uncert2, "data/uncert2.rds" )
 saveRDS( uncert3, "data/uncert3.rds" )
+
+write.csv( mean_lam, "data/mean_lambdas.csv", row.names = FALSE )
 
