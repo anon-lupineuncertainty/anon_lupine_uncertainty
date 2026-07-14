@@ -382,6 +382,34 @@ g_uncert200 <- lapply( 1:100, uncert_it, germ200_c ) %>% bind_rows()
 g_uncert500 <- lapply( 1:100, uncert_it, germ500_c ) %>% bind_rows()
 
 
+# Wrangling for plotting
+
+g_uncert6$sample_size <- 6
+g_uncert10$sample_size <- 10
+g_uncert20$sample_size <- 20
+g_uncert30$sample_size <- 30
+g_uncert40$sample_size <- 40
+g_uncert50$sample_size <- 50
+g_uncert75$sample_size <- 75
+g_uncert100$sample_size <- 100
+g_uncert200$sample_size <- 200
+g_uncert500$sample_size <- 500
+
+g_uncert_all <- bind_rows( g_uncert6, g_uncert10, g_uncert20, g_uncert30,
+                           g_uncert40, g_uncert50, g_uncert75, g_uncert100,
+                           g_uncert200, g_uncert500 )
+
+g_uncert_summary <- g_uncert_all %>%
+  group_by( sample_size, vital_rate ) %>%
+  summarise( 
+    mean = mean( variance_sum ),
+    sd = sd( variance_sum ),
+    se = sd / sqrt( n() ),
+    lower = mean - 1.96 * se,
+    upper = mean + 1.96 * se,
+    .groups = "drop" )
+
+
 # Calculate parameter correlations for plotting --------------------------------
 
 pars_varg   <- c( "surv_b0", "surv_b1", "surv_b2", 
@@ -427,6 +455,30 @@ g_corr200 <- lapply( 1:100, corr_it, germ200_c ) %>% bind_rows()
 g_corr500 <- lapply( 1:100, corr_it, germ500_c ) %>% bind_rows()
 
 
+# Calculating means for plotting
+
+corr_plot6 <- g_corr6 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot10 <- g_corr10 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot20 <- g_corr20 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot30 <- g_corr30 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot40 <- g_corr40 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot50 <- g_corr50 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot75 <- g_corr75 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot100 <- g_corr100 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot200 <- g_corr200 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+corr_plot500 <- g_corr500 %>% group_by( Var1, Var2 ) %>% 
+  summarise( mean_corr = mean( correlation ), .groups = "drop" )
+
+
 
 # Save output ------------------------------------------------------------------
 
@@ -451,6 +503,20 @@ write.csv( g_uncert75, "data/uncert_g75.csv", row.names = F )
 write.csv( g_uncert100, "data/uncert_g100.csv", row.names = F )
 write.csv( g_uncert200, "data/uncert_g200.csv", row.names = F )
 write.csv( g_uncert500, "data/uncert_g500.csv", row.names = F )
+
+write.csv( g_uncert_all, "data/uncert_g_all.csv", row.names = F )
+write.csv( g_uncert_summary, "data/uncert_g_summary.csv", row.names = F )
+
+write.csv( corr_plot6, "data/corr_plot6.csv", row.names = F )
+write.csv( corr_plot10, "data/corr_plot10.csv", row.names = F )
+write.csv( corr_plot20, "data/corr_plot20.csv", row.names = F )
+write.csv( corr_plot30, "data/corr_plot30.csv", row.names = F )
+write.csv( corr_plot40, "data/corr_plot40.csv", row.names = F )
+write.csv( corr_plot50, "data/corr_plot50.csv", row.names = F )
+write.csv( corr_plot75, "data/corr_plot75.csv", row.names = F )
+write.csv( corr_plot100, "data/corr_plot100.csv", row.names = F )
+write.csv( corr_plot200, "data/corr_plot200.csv", row.names = F )
+write.csv( corr_plot500, "data/corr_plot500.csv", row.names = F )
 
 
 germ6   <- read.csv( "data/pars_gsim6.csv" )
