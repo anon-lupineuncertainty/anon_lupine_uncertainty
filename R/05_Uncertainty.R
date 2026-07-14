@@ -459,7 +459,7 @@ saveRDS( uncert2, "data/uncert2.rds" )
 saveRDS( uncert3, "data/uncert3.rds" )
 saveRDS( uncert2_ng, "data/uncert2_ng.rds" )
 
-write.csv( mean_lam, "data/mean_lambdas.csv", row.names = FALSE )
+write.csv( mean_lam, "data/mean_lambdas_all.csv", row.names = FALSE )
 
 write.csv( uncert_comp_plot, "data/uncert_comp_plot.csv", row.names = FALSE )
 

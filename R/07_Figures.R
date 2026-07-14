@@ -40,7 +40,7 @@ uncert3    <- readRDS( "data/uncert3.rds" )
 
 uncert_comp_plot <- read.csv( "data/uncert_comp_plot.csv" )
 
-mean_lambdas <- read.csv( "data/mean_lambdas.csv" )
+mean_lam <- read.csv( "data/mean_lambdas_all.csv" )
 
 surv    <- read.csv( "data/surv.csv" )
 
