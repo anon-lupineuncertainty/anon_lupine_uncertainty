@@ -139,16 +139,26 @@ replace_germ <- function( i, n, pars, germ, seed = T ){
 
 # Perform for varying sample sizes
 
-germ6   <- lapply( 1:100, replace_germ, n = 6, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ10  <- lapply( 1:100, replace_germ, n = 10, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ20  <- lapply( 1:100, replace_germ, n = 20, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ30  <- lapply( 1:100, replace_germ, n = 30, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ40  <- lapply( 1:100, replace_germ, n = 40, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ50  <- lapply( 1:100, replace_germ, n = 50, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ75  <- lapply( 1:100, replace_germ, n = 75, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ100 <- lapply( 1:100, replace_germ, n = 100, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ200 <- lapply( 1:100, replace_germ, n = 200, pars = s_pars[1:1000,], germ = germ_r, seed = T )
-germ500 <- lapply( 1:100, replace_germ, n = 500, pars = s_pars[1:1000,], germ = germ_r, seed = T )
+germ6   <- lapply( 1:100, replace_germ, n = 6, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ10  <- lapply( 1:100, replace_germ, n = 10, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ20  <- lapply( 1:100, replace_germ, n = 20, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ30  <- lapply( 1:100, replace_germ, n = 30, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ40  <- lapply( 1:100, replace_germ, n = 40, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ50  <- lapply( 1:100, replace_germ, n = 50, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ75  <- lapply( 1:100, replace_germ, n = 75, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ100 <- lapply( 1:100, replace_germ, n = 100, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ200 <- lapply( 1:100, replace_germ, n = 200, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
+germ500 <- lapply( 1:100, replace_germ, n = 500, pars = s_pars[1:1000,],
+                   germ = germ_r, seed = T ) %>% bind_rows()
 
 
 # Uncertainty analysis ---------------------------------------------------------
@@ -420,16 +430,16 @@ g_corr500 <- lapply( 1:100, corr_it, germ500_c ) %>% bind_rows()
 
 # Save output ------------------------------------------------------------------
 
-write.csv( bind_rows(germ6), "data/pars_gsim6.csv", row.names = F )
-write.csv( bind_rows(germ10), "data/pars_gsim10.csv", row.names = F )
-write.csv( bind_rows(germ20), "data/pars_gsim20.csv", row.names = F )
-write.csv( bind_rows(germ30), "data/pars_gsim30.csv", row.names = F )
-write.csv( bind_rows(germ40), "data/pars_gsim40.csv", row.names = F )
-write.csv( bind_rows(germ50), "data/pars_gsim50.csv", row.names = F )
-write.csv( bind_rows(germ75), "data/pars_gsim75.csv", row.names = F )
-write.csv( bind_rows(germ100), "data/pars_gsim100.csv", row.names = F )
-write.csv( bind_rows(germ200), "data/pars_gsim200.csv", row.names = F )
-write.csv( bind_rows(germ500), "data/pars_gsim500.csv", row.names = F )
+write.csv( germ6, "data/pars_gsim6.csv", row.names = F )
+write.csv( germ10, "data/pars_gsim10.csv", row.names = F )
+write.csv( germ20, "data/pars_gsim20.csv", row.names = F )
+write.csv( germ30, "data/pars_gsim30.csv", row.names = F )
+write.csv( germ40, "data/pars_gsim40.csv", row.names = F )
+write.csv( germ50, "data/pars_gsim50.csv", row.names = F )
+write.csv( germ75, "data/pars_gsim75.csv", row.names = F )
+write.csv( germ100, "data/pars_gsim100.csv", row.names = F )
+write.csv( germ200, "data/pars_gsim200.csv", row.names = F )
+write.csv( germ500, "data/pars_gsim500.csv", row.names = F )
 
 write.csv( g_uncert6, "data/uncert_g6.csv", row.names = F )
 write.csv( g_uncert10, "data/uncert_g10.csv", row.names = F )
