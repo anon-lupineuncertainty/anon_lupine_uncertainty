@@ -125,7 +125,7 @@ replace_germ <- function( i, n, pars, germ, seed = T ){
   }
   
   # simulate germination data
-  g_sim <- germ_sim( n, germ )
+  g_sim <- lapply( 1:n, germ_sim, df = germ ) %>% bind_rows
   
   # replace recruitment coefficients with sampled values drawn from simulated data
   pars_out <- lapply( 1:nrow( pars ), add_germ, 
@@ -398,6 +398,8 @@ g_uncert500$sample_size <- 500
 g_uncert_all <- bind_rows( g_uncert6, g_uncert10, g_uncert20, g_uncert30,
                            g_uncert40, g_uncert50, g_uncert75, g_uncert100,
                            g_uncert200, g_uncert500 )
+
+g_uncert_test <- bind_rows( g_uncert6, g_uncert10 )
 
 g_uncert_summary <- g_uncert_all %>%
   group_by( sample_size, vital_rate ) %>%
