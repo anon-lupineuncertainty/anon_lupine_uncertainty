@@ -53,6 +53,19 @@ fert    <- read.csv( "data/fert.csv" )
 s_pars2 <- read.csv( "data/pars_sample2.csv" )
 s_pars3 <- read.csv( "data/pars_sample3.csv" )
 
+pars_mean2 <- read.csv( "data/pars_mean2.csv" )
+
+germ6   <- read.csv( "data/pars_gsim6.csv" )
+germ10  <- read.csv( "data/pars_gsim10.csv" )
+germ20  <- read.csv( "data/pars_gsim20.csv" )
+germ30  <- read.csv( "data/pars_gsim30.csv" )
+germ40  <- read.csv( "data/pars_gsim40.csv" )
+germ50  <- read.csv( "data/pars_gsim50.csv" )
+germ75  <- read.csv( "data/pars_gsim75.csv" )
+germ100 <- read.csv( "data/pars_gsim100.csv" )
+germ200 <- read.csv( "data/pars_gsim200.csv" )
+germ500 <- read.csv( "data/pars_gsim500.csv" )
+
 corr2_plot <- read.csv( "data/corr_plot2.csv" )
 corr3_plot <- read.csv( "data/corr_plot3.csv" )
 
@@ -175,13 +188,6 @@ fig3 <- fig3a + fig3b + plot_layout( ncol = 1, axes = "collect_x" )
 
 # Figure 4 ---------------------------------------------------------------------
 
-# g_uncert_summary <- g_uncert_summary %>%
-#   mutate( vital_rate = factor( vital_rate, levels = c( "survival",
-#                                                        "growth",
-#                                                        "reproduction",
-#                                                        "recruitment",
-#                                                        "total" ) ) )
-
 fig4a <- ggplot( filter( g_uncert_summary, vital_rate == "total" ),
                  aes( x = sample_size, y = mean ) ) +
   geom_ribbon( aes( ymin = lower, ymax = upper ), alpha = 0.2 ) +
@@ -247,33 +253,6 @@ fig4_test <- ggplot() +
   base_theme
 
 
-fig4_test2 <- ggplot( filter( g_uncert_summary, vital_rate == "total" ),
-                      aes( x = sample_size, y = mean ) ) +
-  geom_bar( data = filter( g_uncert_summary, vital_rate != "total" ), 
-            aes( x = sample_size, y = mean, fill = vital_rate ), 
-            stat = "identity", position = "stack",  width = 0.7 ) +
-  geom_ribbon( aes( ymin = lower, ymax = upper ), alpha = 0.2 ) +
-  geom_line( linewidth = 1 ) +
-  geom_point( data = filter( g_uncert_summary, vital_rate == "total" ),
-              aes( x = sample_size, y = mean ),
-              size = 2.2, 
-              color = "black" ) +
-  scale_x_log10( breaks = c( 6, 10, 20, 30, 40, 50, 75, 100, 200, 500 ) ) +
-  scale_fill_manual( values = c( growth      = "#8FB339",
-                                 recruitment = "#88CCEE",
-                                 reproduction = "#7A5195",
-                                 survival    = "#D0873C" ),
-                     labels = c( "Growth",
-                                 "Recruitment", 
-                                 "Reproduction",
-                                 "Survival" ),
-                     name = "Vital rate" ) +
-  guides( alpha = "none" ) +
-  labs( x = "Simulated germination trial sample size",
-        y = "Uncertainty" ) +
-  base_theme
-
-
 g_bar <- g_uncert_summary %>%
   filter(vital_rate != "total") %>%
   arrange(sample_size, vital_rate) %>%
@@ -285,7 +264,7 @@ g_bar <- g_uncert_summary %>%
     xmax = sample_size * 1.02
   )
 
-fig4_test3 <- ggplot( filter( g_uncert_summary, vital_rate == "total" ),
+fig4_test2 <- ggplot( filter( g_uncert_summary, vital_rate == "total" ),
                       aes( x = sample_size, y = mean ) ) +
   geom_rect( data = g_bar, aes( xmin = xmin,
                                 xmax = xmax,
@@ -312,6 +291,7 @@ fig4_test3 <- ggplot( filter( g_uncert_summary, vital_rate == "total" ),
   labs( x = "Simulated germination trial sample size",
         y = "Uncertainty" ) +
   base_theme
+
 
 # Supplemental figures =========================================================
 
@@ -500,6 +480,72 @@ p_fert_pred <- plot_mod_pred( fert, m_fert )
 figs5 <- p_fert_pred[[1]] + p_fert_pred[[2]] + p_fert_pred[[3]] + plot_layout( axes = "collect" )
 
 
+# Figure S6 --------------------------------------------------------------------
+
+pars_var2   <- c( "surv_b0", "surv_b1", "surv_b2", 
+                  "grow_b0", "grow_b1", "grow_sig",
+                  "abort", "clip",
+                  "flow_b0", "flow_b1",
+                  "fert_b0", "fert_b1",
+                  "g0", "g1", "g2" )
+
+s_pars_plot <- s_pars2[,pars_var2]
+
+s_pars_plot <- pivot_longer( s_pars_plot, cols = pars_var2,
+                             names_to = "par")
+
+s_pars_mean <- s_pars_plot %>% group_by( par ) %>% 
+  summarise( mean = mean( value ), .groups = "drop" )
+
+pars_mean <- pars_mean2[,pars_var2]
+pars_mean <- pivot_longer( pars_mean, cols = pars_var2,
+                           names_to = "par")
+
+vr_key <- c(
+  surv_b0 = "Survival",
+  surv_b1 = "Survival",
+  surv_b2 = "Survival",
+  grow_b0 = "Growth",
+  grow_b1 = "Growth",
+  grow_sig = "Growth",
+  abort = "Reproduction",
+  clip = "Reproduction",
+  flow_b0 = "Reproduction",
+  flow_b1 = "Reproduction",
+  fert_b0 = "Reproduction",
+  fert_b1 = "Reproduction",
+  g0 = "Recruitment",
+  g1 = "Recruitment",
+  g2 = "Recruitment"
+)
+
+figs6 <- ggplot() +
+  geom_violin( data = s_pars_plot, aes( x = par, y = value, 
+                                        fill = vr_key[par] ),
+               color = NA, alpha = 0.6 ) +
+  facet_wrap( ~ par, scales = "free" ) +
+  geom_point( data = pars_mean, aes( x = par, y = value,
+                                     alpha = "Mean model" ),
+              cex = 2, pch = 16, color = "black" ) +
+  geom_segment( data = s_pars_mean, aes( x = 0.45, xend = 1.45,
+                                         y = mean, yend = mean,
+                                         alpha = "Mean of samples") ) +
+  scale_alpha_manual( name = NULL,
+                      values = c( 1, 1 ),
+                      breaks = c( "Mean model", "Mean of samples" ),
+                      guide = guide_legend( override.aes = list( linetype = c(0,1),
+                                                                 shape = c(16,NA),
+                                                                 color = "black" ) ) ) +
+  scale_fill_manual( name = "Vital rate", values = c( Survival = "#D0873C",
+                                                      Growth = "#8FB339",
+                                                      Reproduction = "#7A5195",
+                                                      Recruitment = "#88CCEE" ) ) +
+  labs( x = "Parameter",
+        y = "Value" ) +
+  base_theme +
+  theme( strip.text.x = element_blank() )
+
+
 # Figure S7 --------------------------------------------------------------------
 
 figs7 <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
@@ -613,7 +659,81 @@ figs8 <- figs8a + figs8b + figs8c + figs8d + figs8e + figs8f + figs8g + figs8h +
   figs8i + figs8j + plot_layout( ncol = 4 )
 
 
-# Figure S9 ---------------------------------------------------------------------
+# Figure S9 --------------------------------------------------------------------
+
+# Comparing sampled germination parameter values to mean model values
+
+g_format <- function( df, n ){
+  df_temp <- repl_zero( df )
+  df_temp <- df_temp[,c("g_adj", "g0", "g1", "g2")]
+  df_temp <- pivot_longer( df_temp, cols = c("g_adj", "g0", "g1", "g2"),
+                           names_to = "par" )
+  df_temp$type <- n
+  
+  return( df_temp )
+}
+
+gtab6   <- g_format( germ6, 6 )
+gtab10  <- g_format( germ10, 10 )
+gtab20  <- g_format( germ20, 20 )
+gtab30  <- g_format( germ30, 30 )
+gtab40  <- g_format( germ40, 40 )
+gtab50  <- g_format( germ50, 50 )
+gtab75  <- g_format( germ75, 75 )
+gtab100 <- g_format( germ100, 100 )
+gtab200 <- g_format( germ200, 200 )
+gtab500 <- g_format( germ500, 500 )
+
+gtabmean <- pars_mean2[,c("g0", "g1", "g2")]
+germ_adj_mean <- calc_germ_adj(lupine_df, g0 = pars_mean2$g0)
+germ_adj_mean <- (pars_mean2$g0 + germ_adj_mean) * pars_mean2$g0
+gtabmean$g_adj <- germ_adj_mean
+
+gtabmean <- pivot_longer( gtabmean, cols = c("g_adj", "g0", "g1", "g2"),
+                          names_to = "par")
+
+gtab <- bind_rows( gtab6, gtab10, gtab20, gtab30, gtab40, gtab50, gtab75,
+                   gtab100, gtab200, gtab500 )
+
+gtab_sample_mean <- gtab %>% group_by( type, par ) %>% 
+  summarise( mean = mean( value ), .groups = "drop" )
+
+par_levels <- unique(gtab$par)
+
+gtab <- gtab %>% mutate(par = factor(par, levels = par_levels))
+
+gtabmean <- gtabmean %>% mutate(par = factor(par, levels = par_levels))
+
+gtab_sample_mean <- gtab_sample_mean %>%
+  mutate( par = factor(par, levels = par_levels),
+          x = as.numeric(par) )
+
+figs9 <- ggplot() +
+  geom_violin( data = gtab, aes( x = factor( par ), y = value ),
+               color = NA, fill = "#88CCEE", width = 1.5 ) +
+  facet_wrap( ~ type, scales = "free_y" ) +
+  geom_point( data = gtabmean, aes( x = factor( par ), y = value,
+                                    alpha = "Mean model" ),
+              cex = 2, pch = 16, color = "black" ) +
+  geom_segment( data = gtab_sample_mean,
+                aes( x = x - 0.45, xend = x + 0.45,
+                     y = mean, yend = mean,
+                     alpha = "Mean of samples" ),
+                linewidth = 0.8, color = "black" ) +
+  scale_alpha_manual( name = NULL,
+                      values = c( 1, 1 ),
+                      breaks = c( "Mean model", "Mean of samples" ),
+                      guide = guide_legend( override.aes = list( linetype = c(0,1),
+                                                                 shape = c(16,NA),
+                                                                 color = "black" ) ) ) +
+  labs( x = "Recruitment parameter", 
+        y = "Value" ) +
+  base_theme +
+  theme( strip.text = element_text( face = "bold", hjust = 0, size = 10 ) )
+
+
+
+# Figure S10 -------------------------------------------------------------------
 
 model_labs <- c( "Quadratic", "Cubic" )
 
@@ -629,9 +749,9 @@ lam_t <- t.test( lambda ~ type, data = lam_tab )
 
 mean_lam_plot2 <- mean_lam[c(1:4),]
 
-# Figure S9a
+# Figure S10a
 
-figs9a <- ggplot() +
+figs10a <- ggplot() +
   geom_violin( data = lam_tab, aes( x = factor( type ), y = lambda,
                                     fill = factor( type ) ),
                color = NA, alpha = 0.4 ) +
@@ -665,7 +785,7 @@ figs9a <- ggplot() +
         title = "(a)" ) +
   base_theme
 
-# Figure S9b
+# Figure S10b
 
 var_tab2 <- uncert2$vr_uncert
 var_tab2[5,] <- list( "total", uncert2$mod_uncert )
@@ -678,7 +798,7 @@ var_tab3$type <- 3
 var_tab <- bind_rows( var_tab2, var_tab3 )
 
 
-figs9b <- ggplot( ) + 
+figs10b <- ggplot( ) + 
   geom_bar( data = var_tab[which(var_tab$vital_rate != "total" ),], 
             aes( x = type, y = variance_sum, fill = vital_rate ), 
             stat = "identity", position = "stack", width = 0.7 ) +
@@ -706,7 +826,7 @@ figs9b <- ggplot( ) +
         fill = "Vital rate contribution" ) +
   base_theme
 
-# Figure S9c
+# Figure S10c
 
 plot_binned_prop <- function( df, n_bins, siz_var, rsp_var ){
   
@@ -767,7 +887,7 @@ plot_binned_prop <- function( df, n_bins, siz_var, rsp_var ){
 
 surv_binned <- plot_binned_prop( surv, 10, log_area_t0, surv_t1 )
 
-figs9_base <- ggplot() + 
+figs10_base <- ggplot() + 
   geom_jitter( data = surv, aes( x = log_area_t0, y = surv_t1 ),
                width = 0.05, height = 0.1, alpha = 0.1 ) +
   geom_errorbar( data = surv_binned, 
@@ -819,9 +939,9 @@ surv_pred3 <- predictor_fun( seq_x, coef( surv_mod3 ) ) %>%
   data.frame( log_area_t0 = seq_x,
               surv_t1 = . )
 
-# Figure S9c
+# Figure S10c
 
-figs9c <- figs9_base +
+figs10c <- figs10_base +
   geom_text( data = model_AIC[which( model_AIC$model == 2 ),], 
              aes( x = size, y = survival, label = AIC ) ) +
   geom_line( data = surv_pred2, 
@@ -830,9 +950,9 @@ figs9c <- figs9_base +
              color = "#f5a351", lwd = 1.5, alpha = 0.8 ) +
   labs( title = "(c) Quadratic survival model" )
 
-# Figure S9d
+# Figure S10d
 
-figs9d <- figs9_base +
+figs10d <- figs10_base +
   geom_text( data = model_AIC[which( model_AIC$model == 3 ),], 
              aes( x = size, y = survival, label = AIC ) ) +
   geom_line( data = surv_pred3, 
@@ -842,19 +962,19 @@ figs9d <- figs9_base +
   labs( title = "(d) Cubic survival model" )
 
 
-# Figure S9, all together
+# Figure S10, all together
 
-figs9ab <- figs9a + figs9b + plot_layout( ncol = 1, axes = "collect_x" )
+figs10ab <- figs10a + figs10b + plot_layout( ncol = 1, axes = "collect_x" )
 
-figs9cd <- figs9c + figs9d + plot_layout( ncol = 1, axes = "collect" )
+figs10cd <- figs10c + figs10d + plot_layout( ncol = 1, axes = "collect" )
 
-figs9 <- wrap_plots( figs9ab ) + wrap_plots( figs9cd ) + 
+figs10 <- wrap_plots( figs10ab ) + wrap_plots( figs10cd ) + 
   plot_layout( ncol = 2, widths = c(1,2) ) & base_theme
 
 
-# Figure S10 --------------------------------------------------------------------
+# Figure S11 --------------------------------------------------------------------
 
-figs10a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
+figs11a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
   geom_tile() +
   geom_text( aes( label = text ) ) +
   base_theme +
@@ -884,7 +1004,7 @@ figs10a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) +
   geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
 
 
-figs10b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
+figs11b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
   geom_tile() +
   geom_text( aes( label = text ) ) +
   labs( title = "(b) With cubic survival model" ) + 
@@ -913,12 +1033,12 @@ figs10b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) +
   geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
   geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
 
-figs10b <- figs10b +
+figs11b <- figs11b +
   theme(
     legend.position = "none"
   )
 
-figs10 <- figs10a / figs10b
+figs11 <- figs11a / figs11b
 
 
 # Save output ------------------------------------------------------------------
@@ -939,14 +1059,16 @@ ggsave( "results/FigureS4.pdf", figs4, width = 220, height = 110, units = "mm",
         device = cairo_pdf )
 ggsave( "results/FigureS5.pdf", figs5, width = 220, height = 110, units = "mm",
         device = cairo_pdf )
-
-
+ggsave( "results/FigureS6.pdf", figs6, width = 220, height = 160, units = "mm",
+        device = cairo_pdf )
 ggsave( "results/FigureS7.pdf", figs7, width = 180, height = 110, units = "mm",
         device = cairo_pdf )
 ggsave( "results/FigureS8.pdf", figs8, width = 280, height = 220, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS9.pdf", figs9, width = 180, height = 110, units = "mm",
+ggsave( "results/FigureS9.pdf", figs9, width = 280, height = 200, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS10.pdf", figs10, width = 180, height = 220, units = "mm",
+ggsave( "results/FigureS10.pdf", figs10, width = 180, height = 110, units = "mm",
+        device = cairo_pdf )
+ggsave( "results/FigureS11.pdf", figs11, width = 180, height = 220, units = "mm",
         device = cairo_pdf )
 
