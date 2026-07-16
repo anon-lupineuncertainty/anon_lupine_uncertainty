@@ -188,34 +188,7 @@ fig3 <- fig3a + fig3b + plot_layout( ncol = 1, axes = "collect_x" )
 
 # Figure 4 ---------------------------------------------------------------------
 
-fig4a <- ggplot( filter( g_uncert_summary, vital_rate == "total" ),
-                 aes( x = sample_size, y = mean ) ) +
-  geom_ribbon( aes( ymin = lower, ymax = upper ), alpha = 0.2 ) +
-  geom_line( linewidth = 1 ) +
-  geom_point( data = filter( g_uncert_summary, vital_rate == "total" ),
-              aes( x = sample_size, y = mean ),
-              size = 2.2, 
-              color = "black" ) +
-  scale_x_log10( breaks = c( 6, 10, 20, 30, 40, 50, 75, 100, 200, 500 ) ) +
-  guides( alpha = "none" ) +
-  labs( x = "Simulated germination trial sample size",
-        y = "Variance in λ") +
-  base_theme
-
-fig4b <- ggplot( filter( g_uncert_summary, vital_rate != "total" ),
-                 aes( x = sample_size, y = mean, color = vital_rate ) ) +
-  geom_line( linewidth = 1 ) +
-  scale_color_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
-                      labels = c( "Growth", "Recruitment",
-                                  "Reproduction", "Survival" ),
-                      guide = "legend",
-                      name = "Vital rate" ) +
-  scale_x_log10( breaks = c( 6, 10, 20, 30, 40, 50, 75, 100, 200, 500 ) ) +
-  labs( x = "Simulated germination trial sample size",
-        y = "Uncertainty contribution") +
-  base_theme
-
-fig4_test <- ggplot() +
+fig4 <- ggplot() +
   geom_ribbon( data = filter( g_uncert_summary, vital_rate == "total" ),
                aes( x = sample_size, ymin = lower, ymax = upper ),
                fill = "black",
@@ -248,46 +221,6 @@ fig4_test <- ggplot() +
                                                                                linewidth = 1.2,
                                                                                linetype = 1,
                                                                                shape = 16 ) ) ) +
-  labs( x = "Simulated germination trial sample size",
-        y = "Uncertainty" ) +
-  base_theme
-
-
-g_bar <- g_uncert_summary %>%
-  filter(vital_rate != "total") %>%
-  arrange(sample_size, vital_rate) %>%
-  group_by(sample_size) %>%
-  mutate(
-    ymax = cumsum(mean),
-    ymin = lag(ymax, default = 0),
-    xmin = sample_size * 0.98,
-    xmax = sample_size * 1.02
-  )
-
-fig4_test2 <- ggplot( filter( g_uncert_summary, vital_rate == "total" ),
-                      aes( x = sample_size, y = mean ) ) +
-  geom_rect( data = g_bar, aes( xmin = xmin,
-                                xmax = xmax,
-                                ymin = ymin,
-                                ymax = ymax,
-                                fill = vital_rate ) ) +
-  geom_ribbon( aes( ymin = lower, ymax = upper ), alpha = 0.2 ) +
-  geom_line( linewidth = 1 ) +
-  geom_point( data = filter( g_uncert_summary, vital_rate == "total" ),
-              aes( x = sample_size, y = mean ),
-              size = 2.2, 
-              color = "black" ) +
-  scale_x_log10( breaks = c( 6, 10, 20, 30, 40, 50, 75, 100, 200, 500 ) ) +
-  scale_fill_manual( values = c( growth      = "#8FB339",
-                                 recruitment = "#88CCEE",
-                                 reproduction = "#7A5195",
-                                 survival    = "#D0873C" ),
-                     labels = c( "Growth",
-                                 "Recruitment", 
-                                 "Reproduction",
-                                 "Survival" ),
-                     name = "Vital rate" ) +
-  guides( alpha = "none" ) +
   labs( x = "Simulated germination trial sample size",
         y = "Uncertainty" ) +
   base_theme
@@ -1048,6 +981,8 @@ ggsave( "results/Figure1.pdf", fig1, width = 180, height = 100, units = "mm",
 ggsave( "results/Figure2.pdf", fig2, width = 85, height = 100, units = "mm",
         device = cairo_pdf )
 ggsave( "results/Figure3.pdf", fig3, width = 130, height = 150, units = "mm",
+        device = cairo_pdf )
+ggsave( "results/Figure4.pdf", fig4, width = 130, height = 100, units = "mm",
         device = cairo_pdf )
 
 
