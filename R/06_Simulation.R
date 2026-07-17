@@ -399,8 +399,6 @@ g_uncert_all <- bind_rows( g_uncert6, g_uncert10, g_uncert20, g_uncert30,
                            g_uncert40, g_uncert50, g_uncert75, g_uncert100,
                            g_uncert200, g_uncert500 )
 
-g_uncert_test <- bind_rows( g_uncert6, g_uncert10 )
-
 g_uncert_summary <- g_uncert_all %>%
   group_by( sample_size, vital_rate ) %>%
   summarise( 

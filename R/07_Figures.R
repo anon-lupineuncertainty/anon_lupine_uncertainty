@@ -982,7 +982,7 @@ ggsave( "results/Figure2.pdf", fig2, width = 85, height = 100, units = "mm",
         device = cairo_pdf )
 ggsave( "results/Figure3.pdf", fig3, width = 130, height = 150, units = "mm",
         device = cairo_pdf )
-ggsave( "results/Figure4.pdf", fig4, width = 130, height = 100, units = "mm",
+ggsave( "results/Figure4.pdf", fig4, width = 180, height = 100, units = "mm",
         device = cairo_pdf )
 
 
