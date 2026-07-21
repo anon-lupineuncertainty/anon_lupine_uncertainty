@@ -320,7 +320,7 @@ plot_surv_mod <- function( df, mod, name, index ){
     geom_line( data = surv_pred, 
                aes( x = log_area_t0,
                     y = surv_t1 ),
-               color = "#D55E00", lwd = 2 ) +
+               color = "#D55E01", lwd = 2 ) +
     ylim( -0.1, 1.1 ) +
     labs( x = expression(log(Size~at~time~italic(t[0]))),
           y = expression(Probability~of~survival~to~time~italic(t[1])),
