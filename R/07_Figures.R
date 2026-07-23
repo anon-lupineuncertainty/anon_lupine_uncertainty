@@ -950,7 +950,8 @@ figs10cd2 <- figs10c + figs10d + plot_layout( ncol = 2, axes = "collect" )
 
 figs10abcd <- wrap_plots( figs10a12 ) + wrap_plots( figs10b12 )
 
-figs10 <- wrap_plots( figs10abcd ) / wrap_plots( figs10cd2 )
+figs10 <- wrap_plots( figs10abcd ) / wrap_plots( figs10cd2 ) + 
+  plot_layout( heights = c( 3, 2 ) )
 
 
 # Figure S11 --------------------------------------------------------------------
