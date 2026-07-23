@@ -34,13 +34,18 @@ library( ggsignif )
 
 # Data -------------------------------------------------------------------------
 
-uncert2    <- readRDS( "data/uncert2.rds" )
-uncert2_ng <- readRDS( "data/uncert2_ng.rds" )
-uncert3    <- readRDS( "data/uncert3.rds" )
+uncert2 <- readRDS( "data/uncert2.rds" )
 
 uncert_comp_plot <- read.csv( "data/uncert_comp_plot.csv" )
+lam_tab_comp     <- read.csv( "data/sampled_lambdas_comp.csv" )
 
-mean_lam <- read.csv( "data/mean_lambdas_all.csv" )
+mean_lam   <- read.csv( "data/mean_lambdas_all.csv" )
+lam_tab_23 <- read.csv( "data/sampled_lambdas_mf.csv" )
+var_tab    <- read.csv( "data/var_cont.csv" )
+
+mean_lam_ng <- read.csv( "data/mean_lambdas_ng.csv" )
+lam_tab_ng  <- read.csv( "data/sampled_lambdas_ng.csv" )
+var_tab_ng  <- read.csv( "data/var_cont_ng.csv" )
 
 g_uncert_all <- read.csv( "data/uncert_g_all.csv" )
 g_uncert_summary <- read.csv( "data/uncert_g_summary.csv" )
@@ -79,6 +84,9 @@ corr_plot75  <- read.csv( "data/corr_plot75.csv" )
 corr_plot100 <- read.csv( "data/corr_plot100.csv" )
 corr_plot200 <- read.csv( "data/corr_plot200.csv" )
 corr_plot500 <- read.csv( "data/corr_plot500.csv" )
+
+cov2_plot <- read.csv( "data/cov_plot2.csv" )
+cov3_plot <- read.csv( "data/cov_plot3.csv" )
 
 
 # Setup ------------------------------------------------------------------------
@@ -134,33 +142,28 @@ fig3a <- ggplot( ) +
 # Figure 3b: comparison of sampled and mean lambda values, with recruitment
   # parameters varying and constant
 
-lam_tab2 <- uncert2$lambdas
-lam_tab2$mod <- "Varying"
-
-lam_tab_ng <- uncert2_ng$lambdas
-lam_tab_ng$mod <- "Constant"
-
-lam_tab <- bind_rows( lam_tab2, lam_tab_ng )
-
-lam_t <- t.test( lambda ~ mod, data = lam_tab )
+lam_t <- t.test( lambda ~ mod, data = lam_tab_comp )
 
 mean_lam_plot <- mean_lam[c(1,1),]
 colnames( mean_lam_plot ) <- c( "mod", "type", "value" )
 mean_lam_plot[1,1] <- "Varying"
 mean_lam_plot[2,1] <- "Constant"
 
+mean_lam_v <- mean( lam_tab_comp[which(lam_tab_comp$mod == "Varying"),'lambda'])
+mean_lam_c <- mean( lam_tab_comp[which(lam_tab_comp$mod == "Constant"),'lambda'])
+
 fig3b <- ggplot() +
-  geom_violin( data = lam_tab, aes( x = factor( mod ), y = lambda ),
+  geom_violin( data = lam_tab_comp, aes( x = factor( mod ), y = lambda ),
                color = NA, alpha = 0.2, fill = "black" ) +
-  geom_signif( data = lam_tab, aes( x = factor( mod ), y = lambda ),
+  geom_signif( data = lam_tab_comp, aes( x = factor( mod ), y = lambda ),
                comparisons = list( c("Varying","Constant")),
                map_signif_level = TRUE ) +
-  geom_segment( aes( x = 2.45, y = mean( lam_tab2$lambda ), 
-                     xend = 1.55, yend = mean( lam_tab2$lambda ),
+  geom_segment( aes( x = 2.45, y = mean_lam_v, 
+                     xend = 1.55, yend = mean_lam_v,
                      alpha = "Mean of samples" ),
                 size = 0.9 ) +
-  geom_segment( aes( x = 0.55, y = mean( lam_tab_ng$lambda ), 
-                     xend = 1.45, yend = mean( lam_tab_ng$lambda ) ),
+  geom_segment( aes( x = 0.55, y = mean_lam_c, 
+                     xend = 1.45, yend = mean_lam_c ),
                 size = 0.9 ) +
   geom_point( data = mean_lam_plot, aes( x = factor( mod ), y = value, 
                                              alpha = "Mean model" ),
@@ -670,25 +673,15 @@ figs9 <- ggplot() +
 
 model_labs <- c( "Quadratic", "Cubic" )
 
-lam_tab2 <- uncert2$lambdas
-lam_tab2$type <- 2
-
-lam_tab3 <- uncert3$lambdas
-lam_tab3$type <- 3
-
-lam_tab <- bind_rows( lam_tab2, lam_tab3 )
-
-lam_t <- t.test( lambda ~ type, data = lam_tab )
-
 mean_lam_plot2 <- mean_lam[c(1:4),]
 
 # Figure S10a
 
 figs10a <- ggplot() +
-  geom_violin( data = lam_tab, aes( x = factor( type ), y = lambda,
+  geom_violin( data = lam_tab_23, aes( x = factor( type ), y = lambda,
                                     fill = factor( type ) ),
                color = NA, alpha = 0.4 ) +
-  geom_signif( data = lam_tab, aes( x = factor( type ), y = lambda ),
+  geom_signif( data = lam_tab_23, aes( x = factor( type ), y = lambda ),
                comparisons = list( c("2","3")),
                map_signif_level = TRUE ) +
   scale_fill_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
@@ -712,24 +705,49 @@ figs10a <- ggplot() +
                                                                  shape = c(16,NA),
                                                                  color = "#D0873C" ) )
   ) +
-  ylim( min( lam_tab$lambda ) - 0.03, max( lam_tab$lambda ) + 0.3 ) +
+  ylim( min( lam_tab_23$lambda ) - 0.03, max( lam_tab_23$lambda ) + 0.3 ) +
   labs( x = "Survival model", 
         y = "Lambda",
-        title = "(a)" ) +
+        title = "(a) Varying recruitment" ) +
   base_theme
 
 # Figure S10b
 
-var_tab2 <- uncert2$vr_uncert
-var_tab2[5,] <- list( "total", uncert2$mod_uncert )
-var_tab2$type <- 2
+figs10a2 <- ggplot() +
+  geom_violin( data = lam_tab_ng, aes( x = factor( type ), y = lambda,
+                                       fill = factor( type ) ),
+               color = NA, alpha = 0.4 ) +
+  geom_signif( data = lam_tab_ng, aes( x = factor( type ), y = lambda ),
+               comparisons = list( c("2","3")),
+               map_signif_level = TRUE ) +
+  scale_fill_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
+  geom_segment( aes( x = 0.55, y = mean_lam_ng[2,3], 
+                     xend = 1.45, yend = mean_lam_ng[2,3],
+                     alpha = "Mean of samples" ),
+                size = 0.9, color = "#f5a351" ) +
+  geom_segment( aes( x = 1.55, y = mean_lam_ng[4,3], 
+                     xend = 2.45, yend = mean_lam_ng[4,3] ),
+                size = 0.9, color = "#a85603"  ) +
+  geom_point( data = mean_lam_ng[c(1,3),], aes( x = factor( type ), y = value,
+                                                color = factor( type ),
+                                                alpha = "Mean model" ),
+              cex = 2, pch = 16 ) +
+  scale_color_manual( values = c( "#f5a351", "#a85603" ), guide = "none" ) +
+  scale_x_discrete( labels = model_labs ) +
+  scale_alpha_manual( name = NULL,
+                      values = c( 1, 1 ),
+                      breaks = c( "Mean model", "Mean of samples" ),
+                      guide = guide_legend( override.aes = list( linetype = c(0,1),
+                                                                 shape = c(16,NA),
+                                                                 color = "#D0873C" ) )
+  ) +
+  ylim( min( lam_tab_ng$lambda ) - 0.03, max( lam_tab_ng$lambda ) + 0.05 ) +
+  labs( x = "Survival model", 
+        y = "Lambda",
+        title = "(b) Constant recruitment" ) +
+  base_theme
 
-var_tab3 <- uncert3$vr_uncert
-var_tab3[5,] <- list( "total", uncert3$mod_uncert )
-var_tab3$type <- 3
-
-var_tab <- bind_rows( var_tab2, var_tab3 )
-
+# Figure S10c
 
 figs10b <- ggplot( ) + 
   geom_bar( data = var_tab[which(var_tab$vital_rate != "total" ),], 
@@ -739,12 +757,9 @@ figs10b <- ggplot( ) +
             aes( x = type, y = variance_sum, alpha = "Model uncertainty" ), 
             stat = "identity", position = "stack", color = "black", fill = NA,
             linewidth = 0.8, width = 0.7 ) +
-  scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#D0873C" ),
-                     labels = c( "Growth", "Recruitment", "Survival" ),
+  scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
+                     labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
                      guide = "legend" ) +
-  # scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
-  #                    labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
-  #                    guide = "legend" ) +
   scale_x_continuous( breaks = c( 2, 3 ), labels = model_labs ) +
   scale_y_sqrt() +
   scale_alpha_manual( name = NULL,
@@ -755,11 +770,39 @@ figs10b <- ggplot( ) +
   guides( fill = guide_legend( "Vital rate contribution" ) ) +
   labs( x = "Survival model", 
         y = "Uncertainty",
-        title = "(b)",
+        title = "(c) Varying recruitment",
         fill = "Vital rate contribution" ) +
   base_theme
 
-# Figure S10c
+# Figure S10d
+
+figs10b2 <- ggplot( ) + 
+  geom_bar( data = var_tab_ng[which(var_tab_ng$vital_rate != "total" ),], 
+            aes( x = type, y = variance_sum, fill = vital_rate ), 
+            stat = "identity", position = "stack", width = 0.7 ) +
+  geom_bar( data = var_tab_ng[which(var_tab_ng$vital_rate == "total" ),], 
+            aes( x = type, y = variance_sum, alpha = "Model uncertainty" ), 
+            stat = "identity", position = "stack", color = "black", fill = NA,
+            linewidth = 0.8, width = 0.7 ) +
+  scale_fill_manual( values = c( "#8FB339", "#7A5195", "#D0873C" ),
+                     labels = c( "Growth", "Reproduction", "Survival" ),
+                     guide = "legend" ) +
+  scale_x_continuous( breaks = c( 2, 3 ), labels = model_labs ) +
+  scale_y_sqrt() +
+  scale_alpha_manual( name = NULL,
+                      values = 1,
+                      breaks = "Model uncertainty",
+                      guide = guide_legend( override.aes = list( color = "black" ) )
+  ) +
+  guides( fill = guide_legend( "Vital rate contribution" ) ) +
+  labs( x = "Survival model", 
+        y = "Uncertainty",
+        title = "(d) Constant recruitment",
+        fill = "Vital rate contribution" ) +
+  base_theme +
+  theme( legend.position = "none" )
+
+# Figure S10e-f
 
 plot_binned_prop <- function( df, n_bins, siz_var, rsp_var ){
   
@@ -881,7 +924,7 @@ figs10c <- figs10_base +
              aes( x = log_area_t0,
                   y = surv_t1 ),
              color = "#f5a351", lwd = 1.5, alpha = 0.8 ) +
-  labs( title = "(c) Quadratic survival model" )
+  labs( title = "(e) Quadratic survival model" )
 
 # Figure S10d
 
@@ -892,17 +935,22 @@ figs10d <- figs10_base +
              aes( x = log_area_t0,
                   y = surv_t1 ),
              color = "#a85603", lwd = 1.5, alpha = 0.8 ) +
-  labs( title = "(d) Cubic survival model" )
+  labs( title = "(f) Cubic survival model" )
 
 
 # Figure S10, all together
 
-figs10ab <- figs10a + figs10b + plot_layout( ncol = 1, axes = "collect_x" )
+figs10a12 <- figs10a + figs10a2 + plot_layout( ncol = 1, axes = "collect", 
+                                               guides = "collect" )
 
-figs10cd <- figs10c + figs10d + plot_layout( ncol = 1, axes = "collect" )
+figs10b12 <- figs10b + figs10b2 + plot_layout( ncol = 1, axes = "collect", 
+                                               guides = "collect" )
 
-figs10 <- wrap_plots( figs10ab ) + wrap_plots( figs10cd ) + 
-  plot_layout( ncol = 2, widths = c(1,2) ) & base_theme
+figs10cd2 <- figs10c + figs10d + plot_layout( ncol = 2, axes = "collect" )
+
+figs10abcd <- wrap_plots( figs10a12 ) + wrap_plots( figs10b12 )
+
+figs10 <- wrap_plots( figs10abcd ) / wrap_plots( figs10cd2 )
 
 
 # Figure S11 --------------------------------------------------------------------
@@ -965,6 +1013,67 @@ figs11b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) +
             fill = "#D0873C" ) +
   geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
   geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
+
+figs11b <- figs11b +
+  theme(
+    legend.position = "none"
+  )
+
+figs11 <- figs11a / figs11b
+
+
+# Figure S11.2 -----------------------------------------------------------------
+
+# Covariances instead of correlations
+
+figs11a <- ggplot( cov2_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
+  geom_tile() +
+  base_theme +
+  labs( title = "(a) With quadratic survival model" ) + 
+  scale_fill_gradient2( low = "#D55E00", mid = "white", high = "#0072B2",
+                        midpoint = 0, name = "Covariance" ) +
+  theme( axis.title.x = element_blank(),
+         axis.title.y = element_blank(),
+         axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 12.7, ymax = 13.0,
+            fill = "#7A5195" ) +
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 12.7, ymax = 13.0,
+            fill = "#8FB339" ) +
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 12.7, ymax = 13.0,
+            fill = "#D0873C" ) +
+  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 0.5, ymax = 6.5,
+            fill = "#7A5195" ) +
+  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 6.5, ymax = 9.5,
+            fill = "#8FB339" ) +
+  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 9.5, ymax = 12.5, 
+            fill = "#D0873C" ) +
+  geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
+
+
+figs11b <- ggplot( cov3_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
+  geom_tile() +
+  labs( title = "(b) With cubic survival model" ) + 
+  base_theme + 
+  scale_fill_gradient2( low = "#D55E00", mid = "white", high = "#0072B2",
+                        midpoint = 0, name = "Covariance" ) +
+  theme( axis.title.x = element_blank(),
+         axis.title.y = element_blank(),
+         axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 13.7, ymax = 14.0,
+            fill = "#7A5195" ) +
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 13.7, ymax = 14.0,
+            fill = "#8FB339" ) +
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 13.7, ymax = 14.0,
+            fill = "#D0873C" ) +
+  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 0.5, ymax = 6.5,
+            fill = "#7A5195" ) +
+  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 6.5, ymax = 9.5,
+            fill = "#8FB339" ) +
+  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 9.5, ymax = 12.5, 
+            fill = "#D0873C" ) +
+  geom_vline( xintercept = c( 6.5, 9.5), color = "white", linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 )
 
 figs11b <- figs11b +
   theme(
