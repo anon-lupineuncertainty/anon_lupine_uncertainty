@@ -33,6 +33,7 @@ s_pars3 <- read.csv( "data/pars_sample3.csv" )
 mean_lambdas <- read.csv( "data/mean_lambdas.csv" )
 
 pars_mean2 <- read.csv( "data/pars_mean2.csv" )
+pars_mean3 <- read.csv( "data/pars_mean3.csv" )
 
 
 # Initializing ipmr objects ----------------------------------------------------
@@ -382,8 +383,8 @@ repl_zero <- function( df, value = 1e-3 ){
   return( df )
 }
 
-s_pars2 <- repl_zero( pars_s2 )
-s_pars3 <- repl_zero( pars_s3 )
+s_pars2 <- repl_zero( s_pars2 )
+s_pars3 <- repl_zero( s_pars3 )
 
 
 # Uncertainty analysis ---------------------------------------------------------
@@ -391,7 +392,7 @@ s_pars3 <- repl_zero( pars_s3 )
 
 uncert2 <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2, samples = s_pars2, 
                         kernels = ker, vr_table = vr_tab2, cores = 3 )
-uncert3 <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3, samples = s_pars3, 
+uncert3 <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3, samples = s_pars3,
                         kernels = ker, vr_table = vr_tab3, cores = 3 )
 
 
@@ -400,28 +401,50 @@ uncert3 <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3, samples = s_pars3,
 # Uncertainty analysis, holding germination coefficients constant
 
 s_pars2_ng <- s_pars2
+s_pars3_ng <- s_pars3
 
 s_pars2_ng$g0 <- pars_mean2$g0
 s_pars2_ng$g1 <- pars_mean2$g1
 s_pars2_ng$g2 <- pars_mean2$g2
 
+s_pars3_ng$g0 <- pars_mean3$g0
+s_pars3_ng$g1 <- pars_mean3$g1
+s_pars3_ng$g2 <- pars_mean3$g2
 
-pars_var2_ng <- c( "surv_b0", "surv_b1", "surv_b2", 
-                  "grow_b0", "grow_b1", "grow_sig",
-                  "abort", "clip",
-                  "flow_b0", "flow_b1",
-                  "fert_b0", "fert_b1" )
+
+pars_var2_ng <- c( "surv_b0", "surv_b1", "surv_b2",
+                   "grow_b0", "grow_b1", "grow_sig",
+                   "abort", "clip",
+                   "flow_b0", "flow_b1",
+                   "fert_b0", "fert_b1" )
+
+pars_var3_ng <- c( "surv_b0", "surv_b1", "surv_b2", "surv_b3",
+                   "grow_b0", "grow_b1", "grow_sig",
+                   "abort", "clip",
+                   "flow_b0", "flow_b1",
+                   "fert_b0", "fert_b1" )
 
 vr_tab2_ng <- data.frame( parameter = pars_var2_ng,
                        vital_rate = c( rep( "survival", 3 ),
                                        rep( "growth", 3 ),
                                        rep( "reproduction", 6 ) ) )
 
+vr_tab3_ng <- data.frame( parameter = pars_var3_ng,
+                          vital_rate = c( rep( "survival", 4 ),
+                                          rep( "growth", 3 ),
+                                          rep( "reproduction", 6 ) ) )
+
 uncert2_ng <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2_ng, 
                            samples = s_pars2_ng, kernels = ker,
                            vr_table = vr_tab2_ng, cores = 3 )
 
-# Formatting for plotting
+uncert3_ng <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3_ng, 
+                           samples = s_pars3_ng, kernels = ker,
+                           vr_table = vr_tab3_ng, cores = 3 )
+
+# Formatting for plotting ------------------------------------------------------
+
+# Comparing explained uncertainty with recruitment parameters varying and constant
 
 uncert_comp <- uncert2$vr_uncert
 uncert_comp[5,1] <- "total"
@@ -435,22 +458,110 @@ uncert_comp_ng$mod <- "With constant recruitment"
 
 uncert_comp_plot <- bind_rows( uncert_comp, uncert_comp_ng )
 
+# Lambdas for plotting - varying vs constant recruitment parameters
 
-# Mean of sampled lambdas for plotting -----------------------------------------
+lam_tab2 <- uncert2$lambdas
+lam_tab2$mod <- "Varying"
+
+lam_tab_ng <- uncert2_ng$lambdas
+lam_tab_ng$mod <- "Constant"
+
+lam_tab_2ng <- bind_rows( lam_tab2, lam_tab_ng )
+
+
+# Mean of sampled lambdas for plotting 
 
 lam_tab2 <- uncert2$lambdas
 
 lam_tab3 <- uncert3$lambdas
 
-lam_tab_ng <- uncert2_ng$lambdas
-
-mean_lam <- data.frame( type  = c( 2, 2, 3, 3, "ng" ),
+mean_lam <- data.frame( type  = c( 2, 2, 3, 3 ),
                         model = c( "Mean model", "Mean of sampled models",
-                                   "Mean model", "Mean of sampled models",
-                                   "Mean of sampled models" ),
+                                   "Mean model", "Mean of sampled models" ),
                         value = c( mean_lambdas[1,2], mean( lam_tab2$lambda ),
-                                   mean_lambdas[2,2], mean( lam_tab3$lambda ),
-                                   mean( lam_tab_ng$lambda )) )
+                                   mean_lambdas[2,2], mean( lam_tab3$lambda ) ) )
+
+# Lambdas for plotting
+
+lam_tab2 <- uncert2$lambdas
+lam_tab2$type <- 2
+
+lam_tab3 <- uncert3$lambdas
+lam_tab3$type <- 3
+
+lam_tab_23 <- bind_rows( lam_tab2, lam_tab3 )
+
+# Vital rate uncertainty contributions for plotting 
+
+var_tab2 <- uncert2$vr_uncert
+var_tab2[5,] <- list( "total", uncert2$mod_uncert )
+var_tab2$type <- 2
+
+var_tab3 <- uncert3$vr_uncert
+var_tab3[5,] <- list( "total", uncert3$mod_uncert )
+var_tab3$type <- 3
+
+var_tab <- bind_rows( var_tab2, var_tab3 )
+
+
+# Mean of sampled lambdas for plotting - germination coefs constant
+
+lam_tab2_ng <- uncert2_ng$lambdas
+lam_tab3_ng <- uncert3_ng$lambdas
+
+mean_lam_ng <- data.frame( type  = c( 2, 2, 3, 3 ),
+                           model = c( "Mean model", "Mean of sampled models",
+                                      "Mean model", "Mean of sampled models" ),
+                           value = c( mean_lambdas[1,2], mean( lam_tab2_ng$lambda ),
+                                      mean_lambdas[2,2], mean( lam_tab3_ng$lambda ) ) )
+
+# Lambdas for plotting - germination coefs constant
+
+lam_tab2_ng <- uncert2_ng$lambdas
+lam_tab2_ng$type <- 2
+
+lam_tab3_ng <- uncert3_ng$lambdas
+lam_tab3_ng$type <- 3
+
+lam_tab_ng <- bind_rows( lam_tab2_ng, lam_tab3_ng )
+
+# Vital rate uncertainty contributions for plotting - germination coefs constant
+
+var_tab2_ng <- uncert2_ng$vr_uncert
+var_tab2_ng[4,] <- list( "total", uncert2_ng$mod_uncert )
+var_tab2_ng$type <- 2
+
+var_tab3_ng <- uncert3_ng$vr_uncert
+var_tab3_ng[4,] <- list( "total", uncert3_ng$mod_uncert )
+var_tab3_ng$type <- 3
+
+var_tab_ng <- bind_rows( var_tab2_ng, var_tab3_ng )
+
+
+# Parameter covariances - germination coefs constant
+
+cov2 <- cov( s_pars2_ng[,pars_var2_ng] )
+cov3 <- cov( s_pars3_ng[,pars_var3_ng] )
+
+cov2_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(cov2),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "covariance"
+)
+
+cov3_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(cov3),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "covariance"
+)
 
 
 # Save output ------------------------------------------------------------------
@@ -458,8 +569,21 @@ mean_lam <- data.frame( type  = c( 2, 2, 3, 3, "ng" ),
 saveRDS( uncert2, "data/uncert2.rds" )
 saveRDS( uncert3, "data/uncert3.rds" )
 saveRDS( uncert2_ng, "data/uncert2_ng.rds" )
+saveRDS( uncert3_ng, "data/uncert3_ng.rds" )
 
-write.csv( mean_lam, "data/mean_lambdas_all.csv", row.names = FALSE )
 
 write.csv( uncert_comp_plot, "data/uncert_comp_plot.csv", row.names = FALSE )
+write.csv( lam_tab_2ng, "data/sampled_lambdas_comp.csv", row.names = FALSE )
+
+write.csv( mean_lam, "data/mean_lambdas_all.csv", row.names = FALSE )
+write.csv( lam_tab_23, "data/sampled_lambdas_mf.csv", row.names = FALSE )
+write.csv( var_tab, "data/var_cont.csv", row.names = FALSE )
+
+write.csv( mean_lam_ng, "data/mean_lambdas_ng.csv", row.names = FALSE )
+write.csv( lam_tab_ng, "data/sampled_lambdas_ng.csv", row.names = FALSE )
+write.csv( var_tab_ng, "data/var_cont_ng.csv", row.names = FALSE )
+
+write.csv( cov2_plot, "data/cov_plot2.csv", row.names = FALSE )
+write.csv( cov3_plot, "data/cov_plot3.csv", row.names = FALSE )
+
 
