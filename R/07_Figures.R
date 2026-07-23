@@ -71,8 +71,8 @@ germ100 <- read.csv( "data/pars_gsim100.csv" )
 germ200 <- read.csv( "data/pars_gsim200.csv" )
 germ500 <- read.csv( "data/pars_gsim500.csv" )
 
-corr2_plot <- read.csv( "data/corr_plot2.csv" )
-corr3_plot <- read.csv( "data/corr_plot3.csv" )
+corr2_plot <- read.csv( "data/corr_plot2_ng.csv" )
+corr3_plot <- read.csv( "data/corr_plot3_ng.csv" )
 
 corr_plot6   <- read.csv( "data/corr_plot6.csv" )
 corr_plot10  <- read.csv( "data/corr_plot10.csv" )
@@ -966,24 +966,20 @@ figs11a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
-  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 16.7, ymax = 17.0,
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 12.7, ymax = 13.0,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 6.5, xmax = 10.5, ymin = 16.7, ymax = 17.0,
-            fill = "#88CCEE" ) +
-  annotate( "rect", xmin = 10.5, xmax = 13.5, ymin = 16.7, ymax = 17.0,
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 12.7, ymax = 13.0,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 13.5, xmax = 16.5, ymin = 16.7, ymax = 17.0,
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 12.7, ymax = 13.0,
             fill = "#D0873C" ) +
-  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 0.5, ymax = 6.5,
+  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 0.5, ymax = 6.5,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 6.5, ymax = 10.5,
-            fill = "#88CCEE" ) +
-  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 10.5, ymax = 13.5,
+  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 6.5, ymax = 9.5,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 13.5, ymax = 16.5, 
+  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 9.5, ymax = 12.5, 
             fill = "#D0873C" ) +
-  geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
-  geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
+  geom_vline( xintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 )
 
 
 figs11b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
@@ -996,43 +992,34 @@ figs11b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
-  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 17.7, ymax = 18.0,
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 13.7, ymax = 14.0,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 6.5, xmax = 10.5, ymin = 17.7, ymax = 18.0,
-            fill = "#88CCEE" ) +
-  annotate( "rect", xmin = 10.5, xmax = 13.5, ymin = 17.7, ymax = 18.0,
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 13.7, ymax = 14.0,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 13.5, xmax = 17.5, ymin = 17.7, ymax = 18.0,
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 13.7, ymax = 14.0,
             fill = "#D0873C" ) +
-  annotate( "rect", xmin = 17.7, xmax = 18.0, ymin = 0.5, ymax = 6.5,
+  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 0.5, ymax = 6.5,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 17.7, xmax = 18.0, ymin = 6.5, ymax = 10.5,
-            fill = "#88CCEE" ) +
-  annotate( "rect", xmin = 17.7, xmax = 18.0, ymin = 10.5, ymax = 13.5,
+  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 6.5, ymax = 9.5,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 17.7, xmax = 18.0, ymin = 13.5, ymax = 17.5, 
+  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 9.5, ymax = 12.5, 
             fill = "#D0873C" ) +
-  geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
-  geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
-
-figs11b <- figs11b +
-  theme(
-    legend.position = "none"
-  )
-
-figs11 <- figs11a / figs11b
+  geom_vline( xintercept = c( 6.5, 9.5), color = "white", linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 )
 
 
-# Figure S11.2 -----------------------------------------------------------------
+figs11ab <- figs11a / figs11b + plot_layout( guides = "collect" )
+
 
 # Covariances instead of correlations
 
-figs11a <- ggplot( cov2_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
+figs11c <- ggplot( cov2_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
   geom_tile() +
   base_theme +
-  labs( title = "(a) With quadratic survival model" ) + 
+  labs( title = "(c) With quadratic survival model" ) + 
   scale_fill_gradient2( low = "#D55E00", mid = "white", high = "#0072B2",
-                        midpoint = 0, name = "Covariance" ) +
+                        midpoint = 0, name = "Covariance",
+                        limits = c( -0.09, 0.11 ) ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
@@ -1052,12 +1039,13 @@ figs11a <- ggplot( cov2_plot, aes( x = Var1, y = Var2, fill = covariance ) ) +
   geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
 
 
-figs11b <- ggplot( cov3_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
+figs11d <- ggplot( cov3_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
   geom_tile() +
-  labs( title = "(b) With cubic survival model" ) + 
+  labs( title = "(d) With cubic survival model" ) + 
   base_theme + 
   scale_fill_gradient2( low = "#D55E00", mid = "white", high = "#0072B2",
-                        midpoint = 0, name = "Covariance" ) +
+                        midpoint = 0, name = "Covariance",
+                        limits = c( -0.09, 0.11 ) ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
@@ -1076,12 +1064,10 @@ figs11b <- ggplot( cov3_plot, aes( x = Var1, y = Var2, fill = covariance ) ) +
   geom_vline( xintercept = c( 6.5, 9.5), color = "white", linewidth = 0.7 ) +
   geom_hline( yintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 )
 
-figs11b <- figs11b +
-  theme(
-    legend.position = "none"
-  )
 
-figs11 <- figs11a / figs11b
+figs11cd <- figs11c / figs11d + plot_layout( guides = "collect" )
+
+figs11 <- wrap_plots( figs11ab ) + wrap_plots( figs11cd )
 
 
 # Save output ------------------------------------------------------------------
@@ -1112,8 +1098,8 @@ ggsave( "results/FigureS8.pdf", figs8, width = 280, height = 220, units = "mm",
         device = cairo_pdf )
 ggsave( "results/FigureS9.pdf", figs9, width = 280, height = 200, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS10.pdf", figs10, width = 180, height = 110, units = "mm",
+ggsave( "results/FigureS10.pdf", figs10, width = 220, height = 180, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS11.pdf", figs11, width = 180, height = 220, units = "mm",
+ggsave( "results/FigureS11.pdf", figs11, width = 280, height = 220, units = "mm",
         device = cairo_pdf )
 
