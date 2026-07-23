@@ -564,6 +564,94 @@ cov3_plot <- pivot_longer(
 )
 
 
+# Parameter correlation matrices
+
+corr2_ng <- cor( s_pars2_ng[,pars_var2_ng] )
+corr3_ng <- cor( s_pars3_ng[,pars_var3_ng] )
+
+corr2_ng_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(corr2_ng),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+corr3_ng_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(corr3_ng),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+sig2_tbl <- cor_pmat( s_pars2_ng[,pars_var2_ng] )
+sig2 <- as.matrix(sig2_tbl[, -1])
+rownames(sig2) <- sig2_tbl$rowname
+sig3_tbl <- cor_pmat( s_pars3_ng[,pars_var3_ng] )
+sig3 <- as.matrix(sig3_tbl[, -1])
+rownames(sig3) <- sig3_tbl$rowname
+
+sig2_star <- sig2
+sig3_star <- sig3
+
+for( i in 1:length(sig2)){
+  if(sig2[i] < 0.001){
+    sig2_star[i] <- "***"
+  } else {
+    if(sig2[i] < 0.01){
+      sig2_star[i] <- "**"
+    } else {
+      if(sig2[i] < 0.05){
+        sig2_star[i] <- "*"
+      } else 
+        sig2_star[i] <- ""
+    }
+  }
+}
+
+for( i in 1:length(sig3)){
+  if(sig3[i] < 0.001){
+    sig3_star[i] <- "***"
+  } else {
+    if(sig3[i] < 0.01){
+      sig3_star[i] <- "**"
+    } else {
+      if(sig3[i] < 0.05){
+        sig3_star[i] <- "*"
+      } else 
+        sig3_star[i] <- ""
+    }
+  }
+}
+
+star2_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(sig2_star),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+star3_plot <- pivot_longer(
+  tibble::rownames_to_column(
+    as.data.frame(sig3_star),
+    "Var1"
+  ),
+  -Var1,
+  names_to = "Var2",
+  values_to = "correlation"
+)
+
+corr2_ng_plot$text <- star2_plot$correlation
+corr3_ng_plot$text <- star3_plot$correlation
+
 # Save output ------------------------------------------------------------------
 
 saveRDS( uncert2, "data/uncert2.rds" )
@@ -586,4 +674,6 @@ write.csv( var_tab_ng, "data/var_cont_ng.csv", row.names = FALSE )
 write.csv( cov2_plot, "data/cov_plot2.csv", row.names = FALSE )
 write.csv( cov3_plot, "data/cov_plot3.csv", row.names = FALSE )
 
+write.csv( corr2_ng_plot, "data/corr_plot2_ng.csv", row.names = F )
+write.csv( corr3_ng_plot, "data/corr_plot3_ng.csv", row.names = F )
 
