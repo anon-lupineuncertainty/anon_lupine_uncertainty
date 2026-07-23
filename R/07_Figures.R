@@ -874,7 +874,7 @@ figs10_base <- ggplot() +
   ylim( -0.1, 1.1 ) +
   labs( x = expression(log(Size~at~time~italic(t[0]))),
         y = expression(Probability~of~survival~to~time~italic(t[1])) ) +
-  theme_bw( )
+  base_theme
 
 surv_mod2 <- glm( surv_t1 ~ log_area_t0 + log_area_t02, 
                   data = surv, family = "binomial" )
