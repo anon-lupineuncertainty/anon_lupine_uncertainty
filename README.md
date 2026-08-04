@@ -8,7 +8,7 @@ Due to restrictions associated with sharing the underlying raw demographic datas
 
 To maximize transparency and reproducibility, several upstream scripts that rely on the raw dataset are included for reference. These scripts document the preprocessing, model fitting, and model selection workflow used in the case study, including generation of exploratory figures used to evaluate model fit. Although these scripts cannot be executed without access to the raw data, they are provided to allow readers and reviewers to fully inspect the analytical pipeline.
 
-All downstream analyses beginning with the mean parameter sets are fully reproducible using the files provided in this repository together with the datasets hosted on Zenodo, which also include an example dataframe illustrating the structure of the raw demographic data.
+All downstream analyses beginning with the mean parameter sets are fully reproducible using the files provided in this repository together with the datasets hosted on Zenodo, which also include an dummy dataframes illustrating the structure of the raw demographic data.
 
 Zenodo DOI: [DOI placeholder]
 
@@ -18,6 +18,16 @@ A workflow overview is provided below, with fully-reproducible scripts indicated
 ### Software Environment
 
 Analyses were conducted in R version 4.3.0 "Already Tomorrow"
+
+This analysis requires a development version of `ipmr` that includes the uncertainty analysis functionality.
+
+Install with
+```{r, echo = T, eval = F}
+remotes::install_github(
+    "anon-lupineuncertainty/ipmr",
+    ref = "v0.0.7-uncertainty"
+)
+```
 
 Package dependencies include:
 
