@@ -15,8 +15,10 @@
   # - data/grow.csv: Full demographic dataset, subsetted for growth model
   # - data/flow.csv: Full demographic dataset, subsetted for flowering model
   # - data/fert.csv: Full demographic dataset, subsetted for fertility model
-  # - data/abort.csv: Full demographic dataset, subsetted for raceme abortion model
-  # - data/cons.csv: Full demographic dataset, subsetted for raceme consumption model
+  # - data/abort.csv: Full demographic dataset, subsetted for raceme abortion
+  #     model
+  # - data/cons.csv: Full demographic dataset, subsetted for raceme consumption
+  #     model
   # - data/other_pars.csv: Dataframe of constant parameters for IPM construction
   # - data/fruits_per_raceme.csv: Experimentally-collected reproduction data
   # - data/seeds_per_fruit.csv: Experimentally-collected reproduction data
@@ -24,11 +26,15 @@
   # - data/germ_adj_factor.csv: Germination adjustment factors
 #
 # Outputs:
-  # - data/pars_mean2.csv: Parameters needed to construct mean IPM with quadratic survival model
-  # - data/pars_mean3.csv: Parameters needed to construct mean IPM with cubic survival model
-  # - data/mf_mean2.csv: Model formulae of vital rates with quadratic survival model
+  # - data/pars_mean2.csv: Parameters needed to construct mean IPM with
+  #     quadratic survival model
+  # - data/pars_mean3.csv: Parameters needed to construct mean IPM with cubic
+  #     survival model
+  # - data/mf_mean2.csv: Model formulae of vital rates with quadratic survival
+  #     model
   # - data/mf_mean3.csv: Model formulae of vital rates with cubic survival model
-  # - data/other_pars.csv: Updated dataframe of constant parameters for IPM construction
+  # - data/other_pars.csv: Updated dataframe of constant parameters for IPM
+  #     construction
   # - results/predictions/: Plots of model predictions over raw data
 #
 # Notes:
@@ -40,7 +46,6 @@ options( stringsAsFactors = F )
 library( tidyverse )
 library( bbmle )
 library( patchwork )
-library( readxl )
 library( mgcv )
 
 

@@ -8,16 +8,60 @@
   # parameter values, using the `uncertainty()` function in `ipmr`.
 #
 # Inputs:
-  # - data/pars_sample2.csv: Sampled parameter values with quadratic survival model
+  # - data/pars_sample2.csv: Sampled parameter values with quadratic survival
+  #     model
   # - data/pars_sample3.csv: Sampled parameter values with cubic survival model
+  # - data/mean_lambdas.csv: Lambda values for model comparison between
+  #     alternative survival model formulations
+  # - data/pars_mean2.csv: Parameters needed to construct mean IPM with
+  #     quadratic survival model
+  # - data/pars_mean3.csv: Parameters needed to construct mean IPM with cubic
+  #     survival model
 #
 # Outputs:
-  # 
-  # 
+  # - data/uncert2.rds: Uncertainty analysis output, with quadratic survival
+  #     model
+  # - data/uncert3.rds: Uncertainty analysis output, with cubic survival model
+  # - data/uncert2_ng.rds: Uncertainty analysis output, with quadratic survival
+  #     model and germination coefficients held constant
+  # - data/uncert3_ng.rds: Uncertainty analysis output, with cubic survival
+  #     model and germination coefficients held constant
+  # - data/uncert_comp_plot.csv: Table of uncertainty contributions by vital
+  #     rate, for plotting comparisons between analysis outputs when germination
+  #     coefficients were resampled vs held constant
+  # - data/sampled_lambdas_comp.csv: Table of lambda values, for plotting
+  #     comparisons between analysis outputs when germination coefficients were
+  #     resampled vs held constant
+  # - data/mean_lambdas_all.csv: Updated table of mean lambda values for
+  #     plotting model comparisons between alternative survival model
+  #     formulations
+  # - data/sampled_lambdas_mf.csv: Table of sampled lambda values, for plotting
+  #     comparisons between analysis outputs of alternative survival model
+  #     formulations
+  # - data/var_cont.csv: Vital rate uncertainty contributions for plotting
+  #     comparisons between analysis outputs of alternative survival model
+  #     formulations
+  # - data/mean_lambdas_ng.csv: Table of mean lambda values for plotting model
+  #     comparisons between alternative survival model formulations, with
+  #     germination coefficients held constant
+  # - data/sampled_lambdas_ng.csv: Table of sampled lambda values, for plotting
+  #     comparisons between analysis outputs of alternative survival model
+  #     formulations, with germination coefficients held constant
+  # - data/var_cont_ng.csv: Vital rate uncertainty contributions for plotting
+  #     comparisons between analysis outputs of alternative survival model
+  #     formulations, with germination coefficients held constant
+  # - data/cov_plot2.csv: Sampled parameter covariances with quadratic survival
+  #     model, for plotting
+  # - data/cov_plot3.csv: Sampled parameter covariances with cubic survival
+  #     model, for plotting
+  # - data/corr_plot2_ng.csv: Sampled parameter correlations with quadratic
+  #     survival model and germination coefficients held constant, for plotting
+  # - data/corr_plot3_ng.csv: Sampled parameter correlations with cubic survival
+  #     model and germination coefficients held constant, for plotting
 #
 # Notes:
-# This script only requires access to the sampled parameter values and is
-  # therefore fully reproducible from this repository and its associated data
+# This script only requires access to the sampled and mean parameter values and
+  # is therefore fully reproducible from this repository and its associated data
   # archive.
 # ==============================================================================
 

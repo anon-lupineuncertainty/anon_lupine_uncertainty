@@ -11,14 +11,22 @@
 # Inputs:
   # - data/lupine_df.csv: Full demographic dataset
   # - data/seedbaskets.csv: Experimentally-collected recruitment dataset
-  # - data/pars_mean2.csv: Parameters needed to construct mean IPM with quadratic survival model
-  # - data/pars_mean3.csv: Parameters needed to construct mean IPM with cubic survival model
-  # - data/mf_mean2.csv: Model formulae of vital rates with quadratic survival model
+  # - data/pars_mean2.csv: Parameters needed to construct mean IPM with
+  #     quadratic survival model
+  # - data/pars_mean3.csv: Parameters needed to construct mean IPM with cubic
+  #     survival model
+  # - data/mf_mean2.csv: Model formulae of vital rates with quadratic survival
+  #     model
   # - data/mf_mean3.csv: Model formulae of vital rates with cubic survival model
 #
 # Outputs:
-  # - data/pars_sample2.csv: Sampled parameter values with quadratic survival model
+  # - data/pars_sample2.csv: Sampled parameter values with quadratic survival
+  #     model
   # - data/pars_sample3.csv: Sampled parameter values with cubic survival model
+  # - data/corr_plot2.csv: Sampled parameter correlations with quadratic
+  #     survival model, for plotting
+  # - data/corr_plot3.csv: Sampled parameter correlations with cubic survival
+  #     model, for plotting
 #
 # Notes:
 # This script requires access to the raw demographic dataset and is therefore

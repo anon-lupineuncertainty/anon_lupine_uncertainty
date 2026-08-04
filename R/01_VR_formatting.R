@@ -19,8 +19,10 @@
   # - data/grow.csv: Full demographic dataset, subsetted for growth model
   # - data/flow.csv: Full demographic dataset, subsetted for flowering model
   # - data/fert.csv: Full demographic dataset, subsetted for fertility model
-  # - data/abort.csv: Full demographic dataset, subsetted for raceme abortion model
-  # - data/cons.csv: Full demographic dataset, subsetted for raceme consumption model
+  # - data/abort.csv: Full demographic dataset, subsetted for raceme abortion
+  #     model
+  # - data/cons.csv: Full demographic dataset, subsetted for raceme consumption
+  #     model
   # - data/other_pars.csv: Dataframe of constant parameters for IPM construction
   # - results/surv_point.png: Plot of raw survival data
   # - results/grow_hist.png: Histogram of raw size data
@@ -35,7 +37,6 @@
 
 options( stringsAsFactors = F )
 library( tidyverse )
-library( readxl )
 library( patchwork )
 library( binom )
 

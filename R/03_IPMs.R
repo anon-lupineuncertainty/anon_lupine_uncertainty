@@ -13,8 +13,14 @@
   # bootstrap resampling.
 #
 # Inputs:
-  # - data/pars_mean2.csv: Parameters needed to construct mean IPM with quadratic survival model
-  # - data/pars_mean3.csv: Parameters needed to construct mean IPM with cubic survival model 
+  # - data/pars_mean2.csv: Parameters needed to construct mean IPM with
+  #     quadratic survival model
+  # - data/pars_mean3.csv: Parameters needed to construct mean IPM with
+  #     cubic survival model 
+#
+# Outputs:
+  # - data/mean_lambdas.csv: Lambda values for model comparison between
+  #     alternative survival model formulations
 #
 # Notes:
 # This script only requires access to the mean parameter values and is therefore

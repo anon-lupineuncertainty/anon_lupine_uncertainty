@@ -7,22 +7,17 @@
 # This script prepares figures for inclusion in the manuscript.
 #
 # Inputs:
-  # - data/surv.csv: Full demographic dataset, subsetted for survival model
-  # - data/uncert2.rds: Output of uncertainty analysis using quadratic survival model
-  # - data/uncert3.rds: Output of uncertainty analysis using cubic survival model
-  # - data/mean_lambdas.csv: Lambda values from the mean models
-  # - data/pars_sample2.csv: Sampled parameter values with quadratic survival model
-  # - data/pars_sample3.csv: Sampled parameter values with cubic survival model
+  # See previous scripts for descriptions of input files needed for plotting
 #
 # Outputs:
+  # - results/Figure#.pdf: PDF of Figures 1-4 for the main text
+  # - results/FigureS#.pdf: PDF of Figures S2-S11 for the appendices
 # 
-# 
-#
 # Notes:
 # This script primarily requires access to the objects produced by the previous
   # scripts and is therefore mostly reproducible from this repository and its
-  # associated data archive. Components of Figure 2 are not reproducible, as
-  # they include plots of the raw demographic data.
+  # associated data archive. Figures S2-S5 and Figure S10e,f are not
+  # reproducible, as they include plots of the raw demographic data.
 # ==============================================================================
 
 options( stringsAsFactors = F )

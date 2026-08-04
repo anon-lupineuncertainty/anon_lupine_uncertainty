@@ -13,8 +13,16 @@
   # - data/pars_sample2.csv: Sampled parameter values with quadratic survival model
 #
 # Outputs:
-# 
-# 
+  # - data/pars_gsim###.csv: Sampled model parameters with the specified sample
+  #     size of simulated germination trials (10 files)
+  # - data/g_uncert###.csv: Output of the iterative uncertainty analysis with
+  #     the specified sample size of simulated germination trials (10 files)
+  # - data/uncert_g_all.csv: Output of the iterative uncertainty analysis for
+  #     all sample sizes, merged into one dataframe for plotting
+  # - data/uncert_g_summary.csv: Summary of the iterative uncertainty analysis
+  #     output for all sample sizes, for plotting
+  # - data/corr_plot###.csv: Summarized parameter correlations for the specified
+  #     sample size of simulated germination trials, for plotting (10 files)
 #
 # Notes:
 # This script only requires access to the sampled parameter values and the 
@@ -517,27 +525,4 @@ write.csv( corr_plot75, "data/corr_plot75.csv", row.names = F )
 write.csv( corr_plot100, "data/corr_plot100.csv", row.names = F )
 write.csv( corr_plot200, "data/corr_plot200.csv", row.names = F )
 write.csv( corr_plot500, "data/corr_plot500.csv", row.names = F )
-
-
-germ6   <- read.csv( "data/pars_gsim6.csv" )
-germ10  <- read.csv( "data/pars_gsim10.csv" )
-germ20  <- read.csv( "data/pars_gsim20.csv" )
-germ30  <- read.csv( "data/pars_gsim30.csv" )
-germ40  <- read.csv( "data/pars_gsim40.csv" )
-germ50  <- read.csv( "data/pars_gsim50.csv" )
-germ75  <- read.csv( "data/pars_gsim75.csv" )
-germ100 <- read.csv( "data/pars_gsim100.csv" )
-germ200 <- read.csv( "data/pars_gsim200.csv" )
-germ500 <- read.csv( "data/pars_gsim500.csv" )
-
-g_uncert6   <- read.csv( "data/g_uncert6.csv" )
-g_uncert10  <- read.csv( "data/g_uncert10.csv" )
-g_uncert20  <- read.csv( "data/g_uncert20.csv" )
-g_uncert30  <- read.csv( "data/g_uncert30.csv" )
-g_uncert40  <- read.csv( "data/g_uncert40.csv" )
-g_uncert50  <- read.csv( "data/g_uncert50.csv" )
-g_uncert75  <- read.csv( "data/g_uncert75.csv" )
-g_uncert100 <- read.csv( "data/g_uncert100.csv" )
-g_uncert200 <- read.csv( "data/g_uncert200.csv" )
-g_uncert500 <- read.csv( "data/g_uncert500.csv" )
 
