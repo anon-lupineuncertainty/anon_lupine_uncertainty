@@ -29,7 +29,7 @@ remotes::install_github(
 )
 ```
 
-Package dependencies include:
+Other package dependencies include:
 
 | Package | Version |
 |---|---|
@@ -38,16 +38,15 @@ Package dependencies include:
 | dplyr | 1.1.2 |
 | extraDistr | 1.10.0 |
 | ggplot2 | 3.4.4 |
-| ggthemes | 4.2.4 |
-| goodpractice | 1.0.5 |
+| ggsignif | 0.6.4 |
 | Hmisc | 5.0.1 |
-| ipmr | 0.0.7 |
 | lintr | 3.1.2 |
 | lme4 | 1.1.33 |
 | mgcv | 1.8.42 |
 | patchwork | 1.3.0 |
 | readxl | 1.4.2 |
 | rgdal | 1.6.6 |
+| rstatix | 1.0.0 |
 | sensemakr | 0.1.6 |
 | testthat | 3.1.7 |
 | tidyr | 1.3.0 |
@@ -55,10 +54,10 @@ Package dependencies include:
 
 
 ### Workflow
-- `01_VR_formatting.R`: Construct functions to subset dataframes from the entire dataset to fit vital rate models on, and visualize the raw data
+- `01_VR_formatting.R`: Construct functions to subset dataframes from the entire dataset to fit vital rate models, and visualize the raw data
 - `02_VR_models.R`: Fit vital rate models, plot models over the raw data, perform model selection, and export model parameters
 - `03_IPMs.R`: Construct IPMs from mean model parameter values (fully reproducible)
 - `04_Sampling.R`: Bootstrap resample demographic data and refit vital rate models to generate a dataframe of sampled parameter values
 - `05_Uncertainty.R`: Perform the uncertainty analysis (fully reproducible)
 - `06_Simulation.R`: Simulate germination data and analyze contribution to uncertainty (fully reproducible)
-- `07_Figures.R`: Prepare figures for publication (fully reproducible)
+- `07_Figures.R`: Prepare figures for publication (main text figures are fully reproducible, only supplemental figures S2-S5 and S10e,f are not reproducible)
