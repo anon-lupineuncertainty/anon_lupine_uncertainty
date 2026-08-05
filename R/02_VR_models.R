@@ -11,6 +11,7 @@
   # bootstrap resampling.
 #
 # Inputs:
+  # - data/lupine_df.csv: Full demographic dataset
   # - data/surv.csv: Full demographic dataset, subsetted for survival model
   # - data/grow.csv: Full demographic dataset, subsetted for growth model
   # - data/flow.csv: Full demographic dataset, subsetted for flowering model
@@ -50,6 +51,8 @@ library( mgcv )
 
 
 # Data -------------------------------------------------------------------------
+
+lupine_df   <- read.csv( "data/lupine_df.csv" )
 
 load_vr_dat <- function( ){
     surv       <<- read.csv( "data/surv.csv" )
@@ -429,8 +432,45 @@ mod_fert <- m_fert[[2]]
 
 # Assembling parameters for IPMs -----------------------------------------------
 
+# Parameters related to reproduction and recruitment
+
 other_pars$fruit_rac <- coef( m_fr_rac )[[1]] %>% exp
 other_pars$seed_fruit <- coef( m_seed_fr )[[1]] %>% exp
+
+seed_raceme <- other_pars$fruit_rac * other_pars$seed_fruit
+
+# calculate number of seeds produced at t0
+
+rac_yr <- lupine_df %>% 
+  subset( year %in% c( 2010, 2011, 2013:2017 ) ) %>%
+  summarise( racemes = sum( numrac_t0, na.rm = T ),
+             clipped = sum( numcl_t0, na.rm = T ),
+             aborted = sum( numab_t0, na.rm = T ) ) %>%
+  mutate( num_int = racemes - ( aborted + clipped ) ) %>%
+  mutate( seeds = round( num_int * seed_raceme, 0 ) )
+
+# calculate number of new seedlings at t1
+
+sdl_yr <- lupine_df %>% 
+  subset( year %in% c( 2011, 2012, 2014:2018 ) ) %>%
+  subset( !is.na( stage_t0 ) ) %>% 
+  subset( stage_t0 == 'SL' ) %>% 
+  summarise( seedlings = n() )
+
+# calculate ratio of observed seedlings / estimated seeds
+
+ratio <- sdl_yr$seedlings / rac_yr$seeds
+
+# calculate germination adjustment factor based on germination field data
+
+germ_adj <- ( other_pars$g0 - ratio ) / other_pars$g0
+
+# adjust mean germination coefficients and replace in other_pars dataframe
+
+other_pars$g0 <- other_pars$g0 * ( 1 - germ_adj )
+other_pars$g1 <- other_pars$g1 * ( 1 - germ_adj )
+other_pars$g2 <- other_pars$g2 * ( 1 - germ_adj )
+
 
 
 # Two versions of the parameters and IPMs diverge at this point:
