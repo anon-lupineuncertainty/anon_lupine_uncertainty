@@ -193,22 +193,6 @@ names( pars_s3 ) <- gsub( "_3$", "", names( pars_s3 ) )
 
 # Parameter correlations for plotting ------------------------------------------
 
-# Function to replace zeroes in sampled parameter values
-  # Default value 1e-3
-
-repl_zero <- function( df, value = 1e-3 ){
-  
-  df[which(df$g2 == 0),"g2"] <- value
-  df[which(df$g1 == 0),"g1"] <- value
-  df[which(df$g0 == 0),"g0"] <- value
-  
-  return( df )
-}
-
-s_pars2 <- repl_zero( pars_s2 )
-s_pars3 <- repl_zero( pars_s3 )
-
-
 # Parameters which vary between samples
 
 pars_var2   <- c( "surv_b0", "surv_b1", "surv_b2", 
