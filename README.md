@@ -25,7 +25,7 @@ Install with
 ```{r, echo = T, eval = F}
 remotes::install_github(
     "anon-lupineuncertainty/ipmr",
-    ref = "v0.0.7-uncertainty"
+    ref = "v0.0.7-uncert"
 )
 ```
 

@@ -595,9 +595,8 @@ figs8 <- figs8a + figs8b + figs8c + figs8d + figs8e + figs8f + figs8g + figs8h +
 # Comparing sampled germination parameter values to mean model values
 
 g_format <- function( df, n ){
-  df_temp <- repl_zero( df )
-  df_temp <- df_temp[,c("g_adj", "g0", "g1", "g2")]
-  df_temp <- pivot_longer( df_temp, cols = c("g_adj", "g0", "g1", "g2"),
+  df_temp <- df[,c("g0", "g1", "g2")]
+  df_temp <- pivot_longer( df_temp, cols = c("g0", "g1", "g2"),
                            names_to = "par" )
   df_temp$type <- n
   
@@ -616,11 +615,8 @@ gtab200 <- g_format( germ200, 200 )
 gtab500 <- g_format( germ500, 500 )
 
 gtabmean <- pars_mean2[,c("g0", "g1", "g2")]
-germ_adj_mean <- calc_germ_adj(lupine_df, g0 = pars_mean2$g0)
-germ_adj_mean <- (pars_mean2$g0 + germ_adj_mean) * pars_mean2$g0
-gtabmean$g_adj <- germ_adj_mean
 
-gtabmean <- pivot_longer( gtabmean, cols = c("g_adj", "g0", "g1", "g2"),
+gtabmean <- pivot_longer( gtabmean, cols = c("g0", "g1", "g2"),
                           names_to = "par")
 
 gtab <- bind_rows( gtab6, gtab10, gtab20, gtab30, gtab40, gtab50, gtab75,
@@ -631,36 +627,46 @@ gtab_sample_mean <- gtab %>% group_by( type, par ) %>%
 
 par_levels <- unique(gtab$par)
 
-gtab <- gtab %>% mutate(par = factor(par, levels = par_levels))
+gtab <- gtab %>% mutate(par = factor(par, levels = par_levels, labels = c( expression('g'[0]),
+                                                                           expression('g'[1]),
+                                                                           expression('g'[2]) ) ) )
 
-gtabmean <- gtabmean %>% mutate(par = factor(par, levels = par_levels))
+gtabmean <- gtabmean %>% mutate(par = factor(par, levels = par_levels, labels = c( expression('g'[0]),
+                                                                                   expression('g'[1]),
+                                                                                   expression('g'[2]) )))
 
-gtab_sample_mean <- gtab_sample_mean %>%
-  mutate( par = factor(par, levels = par_levels),
-          x = as.numeric(par) )
+gtab_sample_mean <- gtab_sample_mean %>% mutate( par = factor(par, levels = par_levels, labels = c( expression('g'[0]),
+                                                                                                    expression('g'[1]),
+                                                                                                    expression('g'[2]) )) )
+
 
 figs9 <- ggplot() +
-  geom_violin( data = gtab, aes( x = factor( par ), y = value ),
-               color = NA, fill = "#88CCEE", width = 1.5 ) +
-  facet_wrap( ~ type, scales = "free_y" ) +
-  geom_point( data = gtabmean, aes( x = factor( par ), y = value,
+  geom_histogram( data = gtab, aes( x = value ),
+                  color = NA, fill = "#88CCEE", width = 1.5 ) +
+  facet_grid( type ~ par, scales = "free", labeller = label_parsed ) +
+  geom_vline( data = gtabmean, aes( xintercept = value,
                                     alpha = "Mean model" ),
-              cex = 2, pch = 16, color = "black" ) +
-  geom_segment( data = gtab_sample_mean,
-                aes( x = x - 0.45, xend = x + 0.45,
-                     y = mean, yend = mean,
+              linewidth = 0.8, linetype = 3, color = "black" ) +
+  geom_vline( data = gtab_sample_mean,
+                aes( xintercept = mean,
                      alpha = "Mean of samples" ),
                 linewidth = 0.8, color = "black" ) +
   scale_alpha_manual( name = NULL,
                       values = c( 1, 1 ),
                       breaks = c( "Mean model", "Mean of samples" ),
-                      guide = guide_legend( override.aes = list( linetype = c(0,1),
-                                                                 shape = c(16,NA),
+                      guide = guide_legend( override.aes = list( linetype = c(3,1),
                                                                  color = "black" ) ) ) +
-  labs( x = "Recruitment parameter", 
-        y = "Value" ) +
+  labs( x = "Value", 
+        y = "Frequency" ) +
+  scale_y_continuous( sec.axis = sec_axis(~ . , name = "Simulated sample size", 
+                                          breaks = NULL, labels = NULL) ) +
+  scale_x_continuous( sec.axis = sec_axis(~ . , name = "Recruitment parameter", 
+                                          breaks = NULL, labels = NULL ) ) +
   base_theme +
-  theme( strip.text = element_text( face = "bold", hjust = 0, size = 10 ) )
+  theme( strip.text = element_text( face = "bold", hjust = 0, size = 10 ),
+         strip.text.x = element_text( hjust = 0.5),
+         strip.text.y = element_text(angle = 0),
+         axis.title = element_text(size = 10, face = "bold") )
 
 
 

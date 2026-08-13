@@ -501,11 +501,18 @@ lambda_mean( pars_mean3 )
 # ipmr model predicts 0.004% greater than hand-built IPM, which is tolerable
 
 
-# kernels: Kernel structure in row major order
+# mega_mat: Subkernel structure in row major order - transpose of the matrix
+  # also seems equivalent, as expected
 
-ker <- c( "SB1_SB1", "SB2_SB1", "enter_SB1",
-          "SB1_SB2", "SB2_SB2", "enter_SB2",
-          "SB1_germ", "SB2_germ", "P", "repr" )
+ker <- "c(P + repr, SB1_germ, SB2_germ,
+           enter_SB1, SB1_SB1, SB2_SB1,
+           enter_SB2, SB1_SB2, SB2_SB2)"
+
+# transpose
+# ker <- "c( SB2_SB2, SB1_SB2, enter_SB2,
+#            SB2_SB1, SB1_SB1, enter_SB1,
+#            SB2_germ, SB1_germ, P + repr )"
+
 
 ker_base2 <- make_iter_kernel(lupinus_ipm2, mega_mat = ker)
 mat_base2 <- ker_base2[[1]]

@@ -82,7 +82,7 @@ resample_germ <- function( n, g_sim, g_adj ){
   germ_ii     <- g_sim[sample( 1:length( g_sim$g0 ), n, replace = T ),] %>% 
     summarise( across( where( is.numeric ), mean ) ) 
   
-  germ_adj    <- ( germ_ii['g0'] - g_adj ) * germ_ii['g0']
+  germ_adj    <- ( germ_ii['g0'] - g_adj ) / germ_ii['g0']
   
   germ_coef   <- data.frame( g0 = germ_ii['g0'] * ( 1 - germ_adj ),
                              g1 = germ_ii['g1'] * ( 1 - germ_adj ),
@@ -333,30 +333,6 @@ vr_tab2 <- data.frame( parameter = pars_var2,
 ker <- c( "SB1_SB1", "SB2_SB1", "enter_SB1",
           "SB1_SB2", "SB2_SB2", "enter_SB2",
           "SB1_germ", "SB2_germ", "P", "repr" )
-
-
-# Function to replace zeroes in sampled parameter values
-  # Default value 1e-3
-
-repl_zero <- function( df, value = 1e-3 ){
-  
-  df[which(df$g2 == 0),"g2"] <- value
-  df[which(df$g1 == 0),"g1"] <- value
-  df[which(df$g0 == 0),"g0"] <- value
-  
-  return( df )
-}
-
-germ6_c <- repl_zero( germ6 )
-germ10_c <- repl_zero( germ10 )
-germ20_c <- repl_zero( germ20 )
-germ30_c <- repl_zero( germ30 )
-germ40_c <- repl_zero( germ40 )
-germ50_c <- repl_zero( germ50 )
-germ75_c <- repl_zero( germ75 )
-germ100_c <- repl_zero( germ100 )
-germ200_c <- repl_zero( germ200 )
-germ500_c <- repl_zero( germ500 )
 
 
 # Function to iteratively perform uncertainty analysis on subsets of sampled
