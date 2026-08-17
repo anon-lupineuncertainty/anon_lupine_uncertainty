@@ -39,6 +39,7 @@ library( extraDistr )
 
 germ_r <- read.csv( "data/seedbaskets.csv" )
 s_pars <- read.csv( "data/pars_sample2.csv" )
+pars_mean2 <- read.csv( "data/pars_mean2.csv" )
 
 
 # Simulating new germination data ----------------------------------------------
@@ -169,9 +170,19 @@ germ500 <- lapply( 1:100, replace_germ, n = 500, pars = s_pars[1:1000,],
                    germ = germ_r, seed = T ) %>% bind_rows()
 
 
+# Some rows in germ6 result in NA values due to simulated values of g0 equal to
+  # zero; checked all other dataframes and there were no other instances of NA
+  # or Inf values
+  # Drop rows without replacement
+
+germ6 <- germ6[-which(is.na(germ6$g0)),]
+
+
 # Uncertainty analysis ---------------------------------------------------------
 
 # Initialize the ipmr IPM object (using quadratic survival model)
+
+inv_logit <- function( x ) exp( x )/( 1 + exp( x ) )
 
 lupinus_ipm2 <- init_ipm( sim_gen = "general",
                           di_dd = "di",
@@ -330,9 +341,18 @@ vr_tab2 <- data.frame( parameter = pars_var2,
                                        rep( "reproduction", 6 ),
                                        rep( "recruitment", 3 ) ) )
 
-ker <- c( "SB1_SB1", "SB2_SB1", "enter_SB1",
-          "SB1_SB2", "SB2_SB2", "enter_SB2",
-          "SB1_germ", "SB2_germ", "P", "repr" )
+ker <- "c(P + repr, SB1_germ, SB2_germ,
+           enter_SB1, SB1_SB1, SB2_SB1,
+           enter_SB2, SB1_SB2, SB2_SB2)"
+
+
+bnds <- list( abort = c(0, Inf),
+              clip  = c(0, Inf),
+              g0    = c(0, Inf),
+              g1    = c(0, Inf),
+              g2    = c(0, Inf) )
+
+n_cores <- 3
 
 
 # Function to iteratively perform uncertainty analysis on subsets of sampled
@@ -343,8 +363,9 @@ uncert_it <- function( i, df ){
   pars_temp <- df[which(df$rep == i),]
   
   uncert_temp <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2,
-                              samples = pars_temp, kernels = ker,
-                              vr_table = vr_tab2, cores = 3 )
+                              samples = pars_temp, mega_mat = ker,
+                              vr_table = vr_tab2, bounds = bnds,
+                              cores = n_cores )
   
   uncert_out <- uncert_temp$vr_uncert
   uncert_out[5,1] <- "total"
@@ -354,16 +375,16 @@ uncert_it <- function( i, df ){
   return( uncert_out )
 }
 
-g_uncert6   <- lapply( 1:100, uncert_it, germ6_c ) %>% bind_rows()
-g_uncert10  <- lapply( 1:100, uncert_it, germ10_c ) %>% bind_rows()
-g_uncert20  <- lapply( 1:100, uncert_it, germ20_c ) %>% bind_rows()
-g_uncert30  <- lapply( 1:100, uncert_it, germ30_c ) %>% bind_rows()
-g_uncert40  <- lapply( 1:100, uncert_it, germ40_c ) %>% bind_rows()
-g_uncert50  <- lapply( 1:100, uncert_it, germ50_c ) %>% bind_rows()
-g_uncert75  <- lapply( 1:100, uncert_it, germ75_c ) %>% bind_rows()
-g_uncert100 <- lapply( 1:100, uncert_it, germ100_c ) %>% bind_rows()
-g_uncert200 <- lapply( 1:100, uncert_it, germ200_c ) %>% bind_rows()
-g_uncert500 <- lapply( 1:100, uncert_it, germ500_c ) %>% bind_rows()
+g_uncert6   <- lapply( 1:100, uncert_it, germ6 ) %>% bind_rows()
+g_uncert10  <- lapply( 1:100, uncert_it, germ10 ) %>% bind_rows()
+g_uncert20  <- lapply( 1:100, uncert_it, germ20 ) %>% bind_rows()
+g_uncert30  <- lapply( 1:100, uncert_it, germ30 ) %>% bind_rows()
+g_uncert40  <- lapply( 1:100, uncert_it, germ40 ) %>% bind_rows()
+g_uncert50  <- lapply( 1:100, uncert_it, germ50 ) %>% bind_rows()
+g_uncert75  <- lapply( 1:100, uncert_it, germ75 ) %>% bind_rows()
+g_uncert100 <- lapply( 1:100, uncert_it, germ100 ) %>% bind_rows()
+g_uncert200 <- lapply( 1:100, uncert_it, germ200 ) %>% bind_rows()
+g_uncert500 <- lapply( 1:100, uncert_it, germ500 ) %>% bind_rows()
 
 
 # Wrangling for plotting
