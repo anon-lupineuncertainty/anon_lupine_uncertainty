@@ -417,13 +417,6 @@ g_uncert_summary <- g_uncert_all %>%
 
 # Calculate parameter correlations for plotting --------------------------------
 
-pars_varg   <- c( "surv_b0", "surv_b1", "surv_b2", 
-                  "grow_b0", "grow_b1", "grow_sig",
-                  "abort", "clip",
-                  "flow_b0", "flow_b1",
-                  "fert_b0", "fert_b1",
-                  "g0", "g1", "g2", "g_adj" )
-
 # Function to iteratively calculate parameter correlations on subsets of sampled
   # parameter values
 
@@ -431,7 +424,7 @@ corr_it <- function( i, df ){
   
   pars_temp <- df[which(df$rep == i),]
   
-  corr_temp <- cor( df[,c(pars_varg)] )
+  corr_temp <- cor( df[,c(pars_var2)] )
   
   corr_out <- pivot_longer(
     tibble::rownames_to_column(
@@ -448,16 +441,16 @@ corr_it <- function( i, df ){
   return( corr_out )
 }
 
-g_corr6   <- lapply( 1:100, corr_it, germ6_c ) %>% bind_rows()
-g_corr10  <- lapply( 1:100, corr_it, germ10_c ) %>% bind_rows()
-g_corr20  <- lapply( 1:100, corr_it, germ20_c ) %>% bind_rows()
-g_corr30  <- lapply( 1:100, corr_it, germ30_c ) %>% bind_rows()
-g_corr40  <- lapply( 1:100, corr_it, germ40_c ) %>% bind_rows()
-g_corr50  <- lapply( 1:100, corr_it, germ50_c ) %>% bind_rows()
-g_corr75  <- lapply( 1:100, corr_it, germ75_c ) %>% bind_rows()
-g_corr100 <- lapply( 1:100, corr_it, germ100_c ) %>% bind_rows()
-g_corr200 <- lapply( 1:100, corr_it, germ200_c ) %>% bind_rows()
-g_corr500 <- lapply( 1:100, corr_it, germ500_c ) %>% bind_rows()
+g_corr6   <- lapply( 1:100, corr_it, germ6 ) %>% bind_rows()
+g_corr10  <- lapply( 1:100, corr_it, germ10 ) %>% bind_rows()
+g_corr20  <- lapply( 1:100, corr_it, germ20 ) %>% bind_rows()
+g_corr30  <- lapply( 1:100, corr_it, germ30 ) %>% bind_rows()
+g_corr40  <- lapply( 1:100, corr_it, germ40 ) %>% bind_rows()
+g_corr50  <- lapply( 1:100, corr_it, germ50 ) %>% bind_rows()
+g_corr75  <- lapply( 1:100, corr_it, germ75 ) %>% bind_rows()
+g_corr100 <- lapply( 1:100, corr_it, germ100 ) %>% bind_rows()
+g_corr200 <- lapply( 1:100, corr_it, germ200 ) %>% bind_rows()
+g_corr500 <- lapply( 1:100, corr_it, germ500 ) %>% bind_rows()
 
 
 # Calculating means for plotting
