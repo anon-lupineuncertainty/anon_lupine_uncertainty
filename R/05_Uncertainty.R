@@ -84,6 +84,8 @@ pars_mean3 <- read.csv( "data/pars_mean3.csv" )
 
 # Repeated exactly as in script 03_IPMs.R
 
+inv_logit <- function( x ) exp( x )/( 1 + exp( x ) )
+
 # With quadratic survival function
 
 lupinus_ipm2 <- init_ipm( sim_gen = "general",
@@ -408,36 +410,35 @@ vr_tab3 <- data.frame( parameter = pars_var3,
                                        rep( "reproduction", 6 ),
                                        rep( "recruitment", 3 ) ) )
 
-# kernels: Kernel structure in row major order
+# mega_mat: Subkernel structure in row major order
+  # Both forms are equivalent
 
-ker <- c( "SB1_SB1", "SB2_SB1", "enter_SB1",
-          "SB1_SB2", "SB2_SB2", "enter_SB2",
-          "SB1_germ", "SB2_germ", "P", "repr" )
+ker <- "c(P + repr, SB1_germ, SB2_germ,
+           enter_SB1, SB1_SB1, SB2_SB1,
+           enter_SB2, SB1_SB2, SB2_SB2)"
+
+ker <- "c( SB2_SB2, SB1_SB2, enter_SB2,
+           SB2_SB1, SB1_SB1, enter_SB1,
+           SB2_germ, SB1_germ, P + repr )"
 
 
-# Function to replace zeroes in sampled parameter values
-  # Default value 1e-3
-
-repl_zero <- function( df, value = 1e-3 ){
-  
-  df[which(df$g2 == 0),"g2"] <- value
-  df[which(df$g1 == 0),"g1"] <- value
-  df[which(df$g0 == 0),"g0"] <- value
-  
-  return( df )
-}
-
-s_pars2 <- repl_zero( s_pars2 )
-s_pars3 <- repl_zero( s_pars3 )
+bnds <- list( abort = c(0, Inf),
+              clip  = c(0, Inf),
+              g0    = c(0, Inf),
+              g1    = c(0, Inf),
+              g2    = c(0, Inf) )
 
 
 # Uncertainty analysis ---------------------------------------------------------
 
 
 uncert2 <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2, samples = s_pars2, 
-                        kernels = ker, vr_table = vr_tab2, cores = 3 )
+                        mega_mat = ker, vr_table = vr_tab2, bounds = bnds,
+                        cores = 3 )
+
 uncert3 <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3, samples = s_pars3,
-                        kernels = ker, vr_table = vr_tab3, cores = 3 )
+                        mega_mat = ker, vr_table = vr_tab3, bounds = bnds,
+                        cores = 3 )
 
 
 # Holding germination constant -------------------------------------------------
@@ -454,7 +455,6 @@ s_pars2_ng$g2 <- pars_mean2$g2
 s_pars3_ng$g0 <- pars_mean3$g0
 s_pars3_ng$g1 <- pars_mean3$g1
 s_pars3_ng$g2 <- pars_mean3$g2
-
 
 pars_var2_ng <- c( "surv_b0", "surv_b1", "surv_b2",
                    "grow_b0", "grow_b1", "grow_sig",
@@ -479,12 +479,13 @@ vr_tab3_ng <- data.frame( parameter = pars_var3_ng,
                                           rep( "reproduction", 6 ) ) )
 
 uncert2_ng <- uncertainty( ipm = lupinus_ipm2, pars = pars_var2_ng, 
-                           samples = s_pars2_ng, kernels = ker,
+                           samples = s_pars2_ng, mega_mat = ker,
                            vr_table = vr_tab2_ng, cores = 3 )
 
 uncert3_ng <- uncertainty( ipm = lupinus_ipm3, pars = pars_var3_ng, 
-                           samples = s_pars3_ng, kernels = ker,
+                           samples = s_pars3_ng, mega_mat = ker,
                            vr_table = vr_tab3_ng, cores = 3 )
+
 
 # Formatting for plotting ------------------------------------------------------
 
@@ -582,10 +583,10 @@ var_tab3_ng$type <- 3
 var_tab_ng <- bind_rows( var_tab2_ng, var_tab3_ng )
 
 
-# Parameter covariances - germination coefs constant
+# Parameter covariances
 
-cov2 <- cov( s_pars2_ng[,pars_var2_ng] )
-cov3 <- cov( s_pars3_ng[,pars_var3_ng] )
+cov2 <- cov( s_pars2[,pars_var2] )
+cov3 <- cov( s_pars3[,pars_var3] )
 
 cov2_plot <- pivot_longer(
   tibble::rownames_to_column(
@@ -608,7 +609,7 @@ cov3_plot <- pivot_longer(
 )
 
 
-# Parameter correlation matrices
+# Parameter correlation matrices - germ coefs constant
 
 corr2_ng <- cor( s_pars2_ng[,pars_var2_ng] )
 corr3_ng <- cor( s_pars3_ng[,pars_var3_ng] )
