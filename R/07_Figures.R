@@ -25,6 +25,7 @@ library( ipmr )
 library( ggplot2 )
 library( patchwork )
 library( ggsignif )
+library( ggh4x )
 
 
 # Data -------------------------------------------------------------------------
@@ -47,8 +48,6 @@ g_uncert_summary <- read.csv( "data/uncert_g_summary.csv" )
 
 surv    <- read.csv( "data/surv.csv" )
 grow    <- read.csv( "data/grow.csv" )
-flow    <- read.csv( "data/flow.csv" )
-fert    <- read.csv( "data/fert.csv" )
 
 s_pars2 <- read.csv( "data/pars_sample2.csv" )
 s_pars3 <- read.csv( "data/pars_sample3.csv" )
@@ -66,8 +65,8 @@ germ100 <- read.csv( "data/pars_gsim100.csv" )
 germ200 <- read.csv( "data/pars_gsim200.csv" )
 germ500 <- read.csv( "data/pars_gsim500.csv" )
 
-corr2_plot <- read.csv( "data/corr_plot2_ng.csv" )
-corr3_plot <- read.csv( "data/corr_plot3_ng.csv" )
+corr2_plot <- read.csv( "data/corr_plot2.csv" )
+corr3_plot <- read.csv( "data/corr_plot3.csv" )
 
 corr_plot6   <- read.csv( "data/corr_plot6.csv" )
 corr_plot10  <- read.csv( "data/corr_plot10.csv" )
@@ -95,20 +94,76 @@ base_theme <- theme_minimal() +
 
 # Figure 1 ---------------------------------------------------------------------
 
-fig1 <- plot( uncert2, type = "param" )
+# Adapted from plot( uncert2, type = "param" ) to add lettering
+
+# fig1 <- plot( uncert2, type = "param" ) +
+#   theme( plot.subtitle = element_text( size = 8, face = "bold", 
+#                                        hjust = 0.2, vjust = 0.8 ),
+#          plot.margin = margin( 10,10,5.5,5.5))
 
 
-# Figure 2 ---------------------------------------------------------------------
+default_cols <- c(
+  "#D0873C", # soft orange
+  "#8FB339", # olive green
+  "#7A5195", # muted purple
+  "#88CCEE" # light blue
+)
 
-fig2 <- plot( uncert2, type = "vr" )
+vr_levels <- unique(uncert2$params_uncert$vital_rate)
+
+vr_colors <- setNames( rep(default_cols, length.out = length(vr_levels)), 
+                       vr_levels )
+
+df <- uncert2$params_uncert
+
+df$parameter <- factor( df$parameter, 
+                        levels = rev(df$parameter[order(df$vital_rate)]) )
+
+title_wrap <- function(x) str_wrap(x, width = 26)
+
+p1 <- ggplot(df, aes(x = cv, y = parameter, color = vital_rate)) +
+  geom_vline(xintercept = 0) +
+  geom_point(size = 2.5) +
+  geom_segment(aes(x = 0, xend = cv, yend = parameter), linewidth = 1) +
+  labs(x = "Coefficient of variation",
+       y = "Parameter",
+       title = title_wrap("(a) Parameter uncertainty")) +
+  scale_color_manual(values = vr_colors, guide = "none") +
+  base_theme
+
+p2 <- ggplot(df, aes(x = elasticity, y = parameter, color = vital_rate)) +
+  geom_vline(xintercept = 0) +
+  geom_point(size = 2.5) +
+  geom_segment(aes(x = 0, xend = elasticity, yend = parameter), 
+               linewidth = 1) +
+  labs(x = "Elasticity",
+       y = NULL,
+       title = title_wrap("(b) Model sensitivity to parameter")) +
+  scale_color_manual(values = vr_colors, guide = "none") +
+  base_theme
+
+p3 <- ggplot(df, aes(x = variance_prop, y = parameter, color = vital_rate)) +
+  geom_vline(xintercept = 0) +
+  geom_point(size = 2.5) +
+  geom_segment(aes(x = 0, xend = variance_prop, yend = parameter), 
+               linewidth = 1) +
+  labs(x = "Uncertainty contribution",
+       y = NULL,
+       title = title_wrap("(c) Parameter contribution to uncertainty in \u03BB"),
+       color = "Vital rate") +
+  scale_color_manual(values = vr_colors) +
+  base_theme
+
+fig1 <- p1 + p2 + p3 + plot_layout(ncol = 3, axes = 'collect_y') & 
+  theme(plot.title = element_text(hjust = 0.5, size = 8))
 
 
-# Figure 3 --------------------------------------------------------------------
+# Figure 2 --------------------------------------------------------------------
 
-# Figure 3a: comparison of explained uncertainty with recruitment parameters
+# Figure 2a: comparison of explained uncertainty with recruitment parameters
   # varying and constant
 
-fig3a <- ggplot( ) + 
+fig2a <- ggplot( ) + 
   geom_bar( data = uncert_comp_plot[which(uncert_comp_plot$vital_rate != "total" ),], 
             aes( x = mod, y = variance_sum, fill = vital_rate ), 
             stat = "identity", position = "stack", width = 0.7 ) +
@@ -118,7 +173,8 @@ fig3a <- ggplot( ) +
             linewidth = 0.8, width = 0.7 ) +
   scale_y_sqrt() +
   scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
-                     labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
+                     labels = c( "Growth", "Recruitment", 
+                                 "Reproduction", "Survival" ),
                      guide = "legend" ) +
   scale_alpha_manual( name = NULL,
                       values = 1,
@@ -134,7 +190,7 @@ fig3a <- ggplot( ) +
   base_theme
 
 
-# Figure 3b: comparison of sampled and mean lambda values, with recruitment
+# Figure 2b: comparison of sampled and mean lambda values, with recruitment
   # parameters varying and constant
 
 lam_t <- t.test( lambda ~ mod, data = lam_tab_comp )
@@ -147,12 +203,9 @@ mean_lam_plot[2,1] <- "Constant"
 mean_lam_v <- mean( lam_tab_comp[which(lam_tab_comp$mod == "Varying"),'lambda'])
 mean_lam_c <- mean( lam_tab_comp[which(lam_tab_comp$mod == "Constant"),'lambda'])
 
-fig3b <- ggplot() +
+fig2b <- ggplot() +
   geom_violin( data = lam_tab_comp, aes( x = factor( mod ), y = lambda ),
                color = NA, alpha = 0.2, fill = "black" ) +
-  geom_signif( data = lam_tab_comp, aes( x = factor( mod ), y = lambda ),
-               comparisons = list( c("Varying","Constant")),
-               map_signif_level = TRUE ) +
   geom_segment( aes( x = 2.45, y = mean_lam_v, 
                      xend = 1.55, yend = mean_lam_v,
                      alpha = "Mean of samples" ),
@@ -164,7 +217,7 @@ fig3b <- ggplot() +
                                              alpha = "Mean model" ),
               cex = 3, pch = 16 ) +
   scale_x_discrete( labels = c( "Constant", "Varying (resampled)" ) ) +
-  ylim( 0.7, 1.9 ) +
+  ylim( 1.0, 2.1 ) +
   scale_alpha_manual( name = NULL,
                       values = c( 1, 1 ),
                       breaks = c( "Mean model", "Mean of samples" ),
@@ -180,13 +233,13 @@ fig3b <- ggplot() +
 
 # Patching them together
 
-fig3 <- fig3a + fig3b + plot_layout( ncol = 1, axes = "collect_x" )
+fig2 <- fig2a + fig2b + plot_layout( ncol = 1, axes = "collect_x" )
 
 
 
-# Figure 4 ---------------------------------------------------------------------
+# Figure 3 ---------------------------------------------------------------------
 
-fig4 <- ggplot() +
+fig3 <- ggplot() +
   geom_ribbon( data = filter( g_uncert_summary, vital_rate == "total" ),
                aes( x = sample_size, ymin = lower, ymax = upper ),
                fill = "black",
@@ -204,6 +257,7 @@ fig4 <- ggplot() +
               size = 2.2, 
               color = "black" ) +
   scale_x_log10( breaks = c( 6, 10, 20, 30, 40, 50, 75, 100, 200, 500 ) ) +
+  scale_y_sqrt() +
   scale_fill_manual( values = c( growth      = "#8FB339",
                                  recruitment = "#88CCEE",
                                  reproduction = "#7A5195",
@@ -314,7 +368,8 @@ plot_surv_mod <- function( df, mod, name, index ){
                    aes( x = log_area_t0, ymin = lwr, ymax = upr ),
                    size = 0.5, width = 0.2 ) +
     geom_point( data = plot_binned_prop( df, 10, log_area_t0, surv_t1 ),
-                aes( x = log_area_t0, y = surv_t1 ), color = "#D0873C", cex = 2 ) +
+                aes( x = log_area_t0, y = surv_t1 ), 
+                color = "#D0873C", cex = 2 ) +
     geom_line( data = surv_pred, 
                aes( x = log_area_t0,
                     y = surv_t1 ),
@@ -331,87 +386,11 @@ plot_surv_mod <- function( df, mod, name, index ){
 p_surv_pred <- plot_mod_pred( surv, m_surv )
 
 figs3 <- p_surv_pred[[1]] + p_surv_pred[[2]] + 
-  p_surv_pred[[3]] + p_surv_pred[[4]] + plot_layout( ncol = 2, axes = "collect" )
+  p_surv_pred[[3]] + p_surv_pred[[4]] + plot_layout( ncol = 2, 
+                                                     axes = "collect" )
 
 
 # Figure S4 --------------------------------------------------------------------
-
-# Fit of flowering models
-
-plot_flow_mod <- function( df, mod, name, index ){
-  
-  seq_x <- seq( min( df$log_area_t0, na.rm = T ),
-                max( df$log_area_t0, na.rm = T ),
-                length.out = 100 )
-  
-  flow_pred <- predictor_fun( seq_x, coef( mod[[index]] ) ) %>%
-    boot::inv.logit() %>%
-    data.frame( log_area_t0 = seq_x,
-                flow_t0 = . )
-  
-  p_flow <- ggplot( data = df, aes( x = log_area_t0, y = flow_t0 ) ) +
-    geom_jitter( width = 0, height = 0.1, alpha = 0.1 ) + 
-    geom_point( data = plot_binned_prop( df, 10, log_area_t0, flow_t0 ),
-                aes( x = log_area_t0, y = flow_t0 ), 
-                color = "#7A5195",
-                cex = 2 ) +
-    geom_errorbar( data = plot_binned_prop( df, 10, log_area_t0, flow_t0 ),
-                   aes( x = log_area_t0, ymin = lwr, ymax = upr ),
-                   size = 0.5, width = 0.5 ) +
-    geom_line( data = flow_pred, 
-               aes( x = log_area_t0,
-                    y = flow_t0 ),
-               color = "#7A5195", lwd = 2 ) +
-    scale_y_continuous( breaks = c( 0.1, 0.5, 0.9 ) ) +
-    ylim( -0.1, 1.1 ) +
-    labs( x = expression(log(Size~at~time~italic(t[0]))),
-          y = expression(Probability~of~flowering~at~time~italic(t[0])),
-          title = name ) +
-    base_theme 
-
-  return( p_flow )
-}
-
-p_flow_pred <- plot_mod_pred( flow, m_flow )
-
-figs4 <- p_flow_pred[[1]] + p_flow_pred[[2]] + p_flow_pred[[3]] + plot_layout( axes = "collect" )
-
-
-# Figure S5 --------------------------------------------------------------------
-
-# Fit of fertility models
-
-plot_fert_mod <- function( df, mod, name, index ){
-  
-  seq_x <- seq( min( df$log_area_t0, na.rm = T ),
-                max( df$log_area_t0, na.rm = T ),
-                length.out = 100 )
-  
-  fert_pred <- predictor_fun( seq_x, coef( mod[[index]] ) ) %>%
-    exp() %>%
-    data.frame( log_area_t0 = seq_x,
-                numrac_t0 = . )
-  
-  p_fert <- ggplot( data = df, aes( x = log_area_t0, y = numrac_t0 ) ) +
-    geom_point( alpha = 0.1 ) + 
-    geom_line( data = fert_pred,
-               aes( x = log_area_t0,
-                    y = numrac_t0 ),
-               color = "#7A5195", lwd = 2 ) +
-    labs( title = name,
-          x = expression(log(Size~at~time~italic(t[0]))),
-          y = expression(Number~of~racemes~produced~at~time~italic(t[0]))) +
-    base_theme
-  
-  return( p_fert )
-}
-
-p_fert_pred <- plot_mod_pred( fert, m_fert )
-
-figs5 <- p_fert_pred[[1]] + p_fert_pred[[2]] + p_fert_pred[[3]] + plot_layout( axes = "collect" )
-
-
-# Figure S6 --------------------------------------------------------------------
 
 pars_var2   <- c( "surv_b0", "surv_b1", "surv_b2", 
                   "grow_b0", "grow_b1", "grow_sig",
@@ -450,7 +429,7 @@ vr_key <- c(
   g2 = "Recruitment"
 )
 
-figs6 <- ggplot() +
+figs4 <- ggplot() +
   geom_violin( data = s_pars_plot, aes( x = par, y = value, 
                                         fill = vr_key[par] ),
                color = NA, alpha = 0.6 ) +
@@ -458,7 +437,7 @@ figs6 <- ggplot() +
   geom_point( data = pars_mean, aes( x = par, y = value,
                                      alpha = "Mean model" ),
               cex = 2, pch = 16, color = "black" ) +
-  geom_segment( data = s_pars_mean, aes( x = 0.45, xend = 1.45,
+  geom_segment( data = s_pars_mean, aes( x = 0.5, xend = 1.5,
                                          y = mean, yend = mean,
                                          alpha = "Mean of samples") ) +
   scale_alpha_manual( name = NULL,
@@ -477,38 +456,41 @@ figs6 <- ggplot() +
   theme( strip.text.x = element_blank() )
 
 
-# Figure S7 --------------------------------------------------------------------
+# Figure S5 --------------------------------------------------------------------
 
-figs7 <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
+figs5 <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
   geom_tile() +
   geom_text( aes( label = text ) ) +
   base_theme +
   scale_fill_gradient2( low = "#D55E00", mid = "white", high = "#0072B2",
-                        midpoint = 0, limits = c(-1,1), name = "Correlation" ) +
+                        midpoint = 0, limits = c(-1,1), 
+                        name = "Correlation" ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
-  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 16.7, ymax = 17.0,
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 15.7, ymax = 16.0,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 6.5, xmax = 10.5, ymin = 16.7, ymax = 17.0,
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 15.7, ymax = 16.0,
             fill = "#88CCEE" ) +
-  annotate( "rect", xmin = 10.5, xmax = 13.5, ymin = 16.7, ymax = 17.0,
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 15.7, ymax = 16.0,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 13.5, xmax = 16.5, ymin = 16.7, ymax = 17.0,
+  annotate( "rect", xmin = 12.5, xmax = 15.5, ymin = 15.7, ymax = 16.0,
             fill = "#D0873C" ) +
-  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 0.5, ymax = 6.5,
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 0.5, ymax = 6.5,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 6.5, ymax = 10.5,
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 6.5, ymax = 9.5,
             fill = "#88CCEE" ) +
-  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 10.5, ymax = 13.5,
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 9.5, ymax = 12.5,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 13.5, ymax = 16.5, 
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 12.5, ymax = 15.5, 
             fill = "#D0873C" ) +
-  geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
-  geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
+  geom_vline( xintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 )
 
 
-# Figure S8 --------------------------------------------------------------------
+# Figure S6 --------------------------------------------------------------------
 
 corr_plot_fxn <- function( df, caption ){
   
@@ -517,28 +499,31 @@ corr_plot_fxn <- function( df, caption ){
     base_theme +
     labs( title = caption ) + 
     scale_fill_gradient2( low = "#D55E00", mid = "white", high = "#0072B2",
-                          midpoint = 0, limits = c(-1,1), name = "Correlation" ) +
+                          midpoint = 0, limits = c(-1,1), 
+                          name = "Correlation" ) +
     theme( axis.title.x = element_blank(),
            axis.title.y = element_blank(),
            axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
-    annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 16.7, ymax = 17.0,
+    annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 15.7, ymax = 16.0,
               fill = "#7A5195" ) +
-    annotate( "rect", xmin = 6.5, xmax = 10.5, ymin = 16.7, ymax = 17.0,
+    annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 15.7, ymax = 16.0,
               fill = "#88CCEE" ) +
-    annotate( "rect", xmin = 10.5, xmax = 13.5, ymin = 16.7, ymax = 17.0,
+    annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 15.7, ymax = 16.0,
               fill = "#8FB339" ) +
-    annotate( "rect", xmin = 13.5, xmax = 16.5, ymin = 16.7, ymax = 17.0,
+    annotate( "rect", xmin = 12.5, xmax = 15.5, ymin = 15.7, ymax = 16.0,
               fill = "#D0873C" ) +
-    annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 0.5, ymax = 6.5,
+    annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 0.5, ymax = 6.5,
               fill = "#7A5195" ) +
-    annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 6.5, ymax = 10.5,
+    annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 6.5, ymax = 9.5,
               fill = "#88CCEE" ) +
-    annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 10.5, ymax = 13.5,
+    annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 9.5, ymax = 12.5,
               fill = "#8FB339" ) +
-    annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 13.5, ymax = 16.5, 
+    annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 12.5, ymax = 15.5, 
               fill = "#D0873C" ) +
-    geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
-    geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
+    geom_vline( xintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+                linewidth = 0.7 ) +
+    geom_hline( yintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+                linewidth = 0.7 )
   
   return( temp_plot )
 }
@@ -546,51 +531,51 @@ corr_plot_fxn <- function( df, caption ){
 
 # Correlation plots for the simulated germination datasets
 
-figs8a <- corr_plot_fxn( corr_plot6,
+figs6a <- corr_plot_fxn( corr_plot6,
                          caption = "(a) 6 samples" ) +
   theme( legend.position = "none" )
 
-figs8b <- corr_plot_fxn( corr_plot10,
+figs6b <- corr_plot_fxn( corr_plot10,
                          caption = "(b) 10 samples" ) +
   theme( legend.position = "none" )
 
-figs8c <- corr_plot_fxn( corr_plot20,
+figs6c <- corr_plot_fxn( corr_plot20,
                          caption = "(c) 20 samples" ) +
   theme( legend.position = "none" )
 
-figs8d <- corr_plot_fxn( corr_plot30,
+figs6d <- corr_plot_fxn( corr_plot30,
                          caption = "(d) 30 samples" ) +
   theme( legend.position = "none" )
 
-figs8e <- corr_plot_fxn( corr_plot40,
+figs6e <- corr_plot_fxn( corr_plot40,
                          caption = "(e) 40 samples" ) +
   theme( legend.position = "none" )
 
-figs8f <- corr_plot_fxn( corr_plot50,
+figs6f <- corr_plot_fxn( corr_plot50,
                          caption = "(f) 50 samples" ) +
   theme( legend.position = "none" )
 
-figs8g <- corr_plot_fxn( corr_plot75,
+figs6g <- corr_plot_fxn( corr_plot75,
                          caption = "(g) 75 samples" ) +
   theme( legend.position = "none" )
 
-figs8h <- corr_plot_fxn( corr_plot100, 
+figs6h <- corr_plot_fxn( corr_plot100, 
                          caption = "(h) 100 samples" ) +
   theme( legend.position = "none" )
 
-figs8i <- corr_plot_fxn( corr_plot200,
+figs6i <- corr_plot_fxn( corr_plot200,
                          caption = "(i) 200 samples" ) +
   theme( legend.position = "none" )
 
-figs8j <- corr_plot_fxn( corr_plot500,
+figs6j <- corr_plot_fxn( corr_plot500,
                          caption = "(j) 500 samples" ) +
   theme( legend.position = "none" )
 
-figs8 <- figs8a + figs8b + figs8c + figs8d + figs8e + figs8f + figs8g + figs8h + 
-  figs8i + figs8j + plot_layout( ncol = 4 )
+figs6 <- figs6a + figs6b + figs6c + figs6d + figs6e + figs6f + figs6g + figs6h + 
+  figs6i + figs6j + plot_layout( ncol = 4 )
 
 
-# Figure S9 --------------------------------------------------------------------
+# Figure S7 --------------------------------------------------------------------
 
 # Comparing sampled germination parameter values to mean model values
 
@@ -627,23 +612,96 @@ gtab_sample_mean <- gtab %>% group_by( type, par ) %>%
 
 par_levels <- unique(gtab$par)
 
-gtab <- gtab %>% mutate(par = factor(par, levels = par_levels, labels = c( expression('g'[0]),
-                                                                           expression('g'[1]),
-                                                                           expression('g'[2]) ) ) )
+gtab <- gtab %>% mutate(par = factor(par, 
+                                     levels = par_levels, 
+                                     labels = c( expression('g'[0]),
+                                                 expression('g'[1]),
+                                                 expression('g'[2]) ) ) )
 
-gtabmean <- gtabmean %>% mutate(par = factor(par, levels = par_levels, labels = c( expression('g'[0]),
-                                                                                   expression('g'[1]),
-                                                                                   expression('g'[2]) )))
+gtabmean <- gtabmean %>% mutate(par = factor(par, 
+                                             levels = par_levels, 
+                                             labels = c( expression('g'[0]),
+                                                         expression('g'[1]),
+                                                         expression('g'[2]) )))
 
-gtab_sample_mean <- gtab_sample_mean %>% mutate( par = factor(par, levels = par_levels, labels = c( expression('g'[0]),
-                                                                                                    expression('g'[1]),
-                                                                                                    expression('g'[2]) )) )
+gtab_sample_mean <- gtab_sample_mean %>% mutate( par = factor(par, 
+                                                              levels = par_levels, 
+                                                              labels = c( expression('g'[0]),
+                                                                          expression('g'[1]),
+                                                                          expression('g'[2]) )) )
 
 
-figs9 <- ggplot() +
+
+nice_top <- function(x) {
+  magnitude <- 10^floor(log10(x))
+  scaled <- x / magnitude
+  
+  multiplier <- dplyr::case_when(
+    scaled <= 1   ~ 1.5,
+    scaled <= 1.5 ~ 2,
+    scaled <= 2   ~ 2.5,
+    scaled <= 2.5 ~ 3,
+    scaled <= 3   ~ 4,
+    scaled <= 4   ~ 5,
+    scaled <= 5   ~ 6,
+    scaled <= 6   ~ 7.5,
+    scaled <= 7.5 ~ 8,
+    scaled <= 8   ~ 9,
+    TRUE          ~ 10
+  )
+  
+  multiplier * magnitude
+}
+
+
+g0_scale <- scale_y_continuous( breaks = function(x){
+  top <- nice_top(max(x))
+  c(0,top/2, top)
+},
+labels = scales::label_comma(),
+expand = expansion(mult=c(0,0.05)),
+sec.axis = sec_axis(~ . , name = "Simulated sample size",
+                    breaks = NULL, labels = NULL))
+
+g1_scale <- scale_y_continuous( breaks = c(0, 30000),
+                                limits = c(0,30000),
+                                labels = scales::label_comma(),
+                                sec.axis = sec_axis(~ . , name = "Simulated sample size",
+                                                    breaks = NULL, labels = NULL))
+
+g2_scale <- scale_y_continuous( breaks = c(0, 60000),
+                                limits = c(0, 60000),
+                                labels = scales::label_comma(),
+                                sec.axis = sec_axis(~ . , name = "Simulated sample size",
+                                                    breaks = NULL, labels = NULL))
+
+g0_x <- scale_x_continuous( limits = c(0,0.4),
+                            oob = scales::oob_keep,
+                            sec.axis = sec_axis(~ . , name = "Recruitment parameter", 
+                                                breaks = NULL, labels = NULL ) )
+
+g1_x <- scale_x_continuous( limits = c(0,0.04),
+                            breaks = c(0,0.02,0.04),
+                            oob = scales::oob_keep,
+                            sec.axis = sec_axis(~ . , name = "Recruitment parameter", 
+                                                breaks = NULL, labels = NULL ) )
+
+g2_x <- scale_x_continuous( limits = c(0,0.0022),
+                            n.breaks = 3,
+                            oob = scales::oob_keep,
+                            sec.axis = sec_axis(~ . , name = "Recruitment parameter", 
+                                                breaks = NULL, labels = NULL ) )
+
+y_scales <- rep(list(g0_scale, g1_scale, g2_scale), times = 10)
+
+x_scales <- rep(list(g0_x, g1_x, g2_x), times = 10)
+
+
+figs7 <- ggplot() +
   geom_histogram( data = gtab, aes( x = value ),
-                  color = NA, fill = "#88CCEE", width = 1.5 ) +
-  facet_grid( type ~ par, scales = "free", labeller = label_parsed ) +
+                  color = NA, fill = "#88CCEE", bins = 50 ) +
+  facet_grid2( type ~ par, scales = "free", labeller = label_parsed, 
+               independent = "y" ) +
   geom_vline( data = gtabmean, aes( xintercept = value,
                                     alpha = "Mean model" ),
               linewidth = 0.8, linetype = 3, color = "black" ) +
@@ -658,7 +716,8 @@ figs9 <- ggplot() +
                                                                  color = "black" ) ) ) +
   labs( x = "Value", 
         y = "Frequency" ) +
-  scale_y_continuous( sec.axis = sec_axis(~ . , name = "Simulated sample size", 
+  facetted_pos_scales( x = x_scales, y = y_scales ) +
+  scale_y_continuous( sec.axis = sec_axis(~ . , name = "Simulated sample size",
                                           breaks = NULL, labels = NULL) ) +
   scale_x_continuous( sec.axis = sec_axis(~ . , name = "Recruitment parameter", 
                                           breaks = NULL, labels = NULL ) ) +
@@ -666,19 +725,19 @@ figs9 <- ggplot() +
   theme( strip.text = element_text( face = "bold", hjust = 0, size = 10 ),
          strip.text.x = element_text( hjust = 0.5),
          strip.text.y = element_text(angle = 0),
-         axis.title = element_text(size = 10, face = "bold") )
+         axis.title = element_text(size = 10, face = "bold"),
+         panel.spacing.y = unit( 0.9, "lines" ) )
 
 
-
-# Figure S10 -------------------------------------------------------------------
+# Figure S8 -------------------------------------------------------------------
 
 model_labs <- c( "Quadratic", "Cubic" )
 
 mean_lam_plot2 <- mean_lam[c(1:4),]
 
-# Figure S10a
+# Figure S8a
 
-figs10a <- ggplot() +
+figs8a <- ggplot() +
   geom_violin( data = lam_tab_23, aes( x = factor( type ), y = lambda,
                                     fill = factor( type ) ),
                color = NA, alpha = 0.4 ) +
@@ -712,9 +771,9 @@ figs10a <- ggplot() +
         title = "(a) Varying recruitment" ) +
   base_theme
 
-# Figure S10b
+# Figure S8b
 
-figs10a2 <- ggplot() +
+figs8b <- ggplot() +
   geom_violin( data = lam_tab_ng, aes( x = factor( type ), y = lambda,
                                        fill = factor( type ) ),
                color = NA, alpha = 0.4 ) +
@@ -748,9 +807,9 @@ figs10a2 <- ggplot() +
         title = "(b) Constant recruitment" ) +
   base_theme
 
-# Figure S10c
+# Figure S8c
 
-figs10b <- ggplot( ) + 
+figs8c <- ggplot( ) + 
   geom_bar( data = var_tab[which(var_tab$vital_rate != "total" ),], 
             aes( x = type, y = variance_sum, fill = vital_rate ), 
             stat = "identity", position = "stack", width = 0.7 ) +
@@ -759,7 +818,8 @@ figs10b <- ggplot( ) +
             stat = "identity", position = "stack", color = "black", fill = NA,
             linewidth = 0.8, width = 0.7 ) +
   scale_fill_manual( values = c( "#8FB339", "#88CCEE", "#7A5195", "#D0873C" ),
-                     labels = c( "Growth", "Recruitment", "Reproduction", "Survival" ),
+                     labels = c( "Growth", "Recruitment", 
+                                 "Reproduction", "Survival" ),
                      guide = "legend" ) +
   scale_x_continuous( breaks = c( 2, 3 ), labels = model_labs ) +
   scale_y_sqrt() +
@@ -775,9 +835,9 @@ figs10b <- ggplot( ) +
         fill = "Vital rate contribution" ) +
   base_theme
 
-# Figure S10d
+# Figure S8d
 
-figs10b2 <- ggplot( ) + 
+figs8d <- ggplot( ) + 
   geom_bar( data = var_tab_ng[which(var_tab_ng$vital_rate != "total" ),], 
             aes( x = type, y = variance_sum, fill = vital_rate ), 
             stat = "identity", position = "stack", width = 0.7 ) +
@@ -803,7 +863,7 @@ figs10b2 <- ggplot( ) +
   base_theme +
   theme( legend.position = "none" )
 
-# Figure S10e-f
+# Figure S8e-f
 
 plot_binned_prop <- function( df, n_bins, siz_var, rsp_var ){
   
@@ -864,7 +924,7 @@ plot_binned_prop <- function( df, n_bins, siz_var, rsp_var ){
 
 surv_binned <- plot_binned_prop( surv, 10, log_area_t0, surv_t1 )
 
-figs10_base <- ggplot() + 
+figs8_base <- ggplot() + 
   geom_jitter( data = surv, aes( x = log_area_t0, y = surv_t1 ),
                width = 0.05, height = 0.1, alpha = 0.1 ) +
   geom_errorbar( data = surv_binned, 
@@ -916,9 +976,9 @@ surv_pred3 <- predictor_fun( seq_x, coef( surv_mod3 ) ) %>%
   data.frame( log_area_t0 = seq_x,
               surv_t1 = . )
 
-# Figure S10c
+# Figure S8e
 
-figs10c <- figs10_base +
+figs8e <- figs8_base +
   geom_text( data = model_AIC[which( model_AIC$model == 2 ),], 
              aes( x = size, y = survival, label = AIC ) ) +
   geom_line( data = surv_pred2, 
@@ -927,9 +987,9 @@ figs10c <- figs10_base +
              color = "#f5a351", lwd = 1.5, alpha = 0.8 ) +
   labs( title = "(e) Quadratic survival model" )
 
-# Figure S10d
+# Figure S8f
 
-figs10d <- figs10_base +
+figs8f <- figs8_base +
   geom_text( data = model_AIC[which( model_AIC$model == 3 ),], 
              aes( x = size, y = survival, label = AIC ) ) +
   geom_line( data = surv_pred3, 
@@ -939,25 +999,25 @@ figs10d <- figs10_base +
   labs( title = "(f) Cubic survival model" )
 
 
-# Figure S10, all together
+# Figure S8, all together
 
-figs10a12 <- figs10a + figs10a2 + plot_layout( ncol = 1, axes = "collect", 
+figs8ab <- figs8a + figs8b + plot_layout( ncol = 1, axes = "collect", 
                                                guides = "collect" )
 
-figs10b12 <- figs10b + figs10b2 + plot_layout( ncol = 1, axes = "collect", 
+figs8cd <- figs8c + figs8d + plot_layout( ncol = 1, axes = "collect", 
                                                guides = "collect" )
 
-figs10cd2 <- figs10c + figs10d + plot_layout( ncol = 2, axes = "collect" )
+figs8ef <- figs8e + figs8f + plot_layout( ncol = 2, axes = "collect" )
 
-figs10abcd <- wrap_plots( figs10a12 ) + wrap_plots( figs10b12 )
+figs8abcd <- wrap_plots( figs8ab ) + wrap_plots( figs8cd )
 
-figs10 <- wrap_plots( figs10abcd ) / wrap_plots( figs10cd2 ) + 
+figs8 <- wrap_plots( figs8abcd ) / wrap_plots( figs8ef ) + 
   plot_layout( heights = c( 3, 2 ) )
 
 
-# Figure S11 --------------------------------------------------------------------
+# Figure S9 --------------------------------------------------------------------
 
-figs11a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
+figs9a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
   geom_tile() +
   geom_text( aes( label = text ) ) +
   base_theme +
@@ -967,23 +1027,29 @@ figs11a <- ggplot( corr2_plot, aes( x = Var1, y = Var2, fill = correlation ) ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
-  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 12.7, ymax = 13.0,
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 15.7, ymax = 16.0,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 12.7, ymax = 13.0,
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 15.7, ymax = 16.0,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 15.7, ymax = 16.0,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 12.7, ymax = 13.0,
+  annotate( "rect", xmin = 12.5, xmax = 15.5, ymin = 15.7, ymax = 16.0,
             fill = "#D0873C" ) +
-  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 0.5, ymax = 6.5,
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 0.5, ymax = 6.5,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 6.5, ymax = 9.5,
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 6.5, ymax = 9.5,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 9.5, ymax = 12.5,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 9.5, ymax = 12.5, 
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 12.5, ymax = 15.5, 
             fill = "#D0873C" ) +
-  geom_vline( xintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 ) +
-  geom_hline( yintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 )
+  geom_vline( xintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 )
 
 
-figs11b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
+figs9b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) + 
   geom_tile() +
   geom_text( aes( label = text ) ) +
   labs( title = "(b) With cubic survival model" ) + 
@@ -993,28 +1059,34 @@ figs11b <- ggplot( corr3_plot, aes( x = Var1, y = Var2, fill = correlation ) ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
-  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 13.7, ymax = 14.0,
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 16.7, ymax = 17.0,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 13.7, ymax = 14.0,
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 16.7, ymax = 17.0,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 16.7, ymax = 17.0,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 13.7, ymax = 14.0,
+  annotate( "rect", xmin = 12.5, xmax = 16.5, ymin = 16.7, ymax = 17.0,
             fill = "#D0873C" ) +
-  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 0.5, ymax = 6.5,
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 0.5, ymax = 6.5,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 6.5, ymax = 9.5,
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 6.5, ymax = 9.5,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 9.5, ymax = 12.5,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 9.5, ymax = 12.5, 
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 12.5, ymax = 16.5, 
             fill = "#D0873C" ) +
-  geom_vline( xintercept = c( 6.5, 9.5), color = "white", linewidth = 0.7 ) +
-  geom_hline( yintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 )
+  geom_vline( xintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 )
 
 
-figs11ab <- figs11a / figs11b + plot_layout( guides = "collect" )
+figs9ab <- figs9a / figs9b + plot_layout( guides = "collect" )
 
 
 # Covariances instead of correlations
 
-figs11c <- ggplot( cov2_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
+figs9c <- ggplot( cov2_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
   geom_tile() +
   base_theme +
   labs( title = "(c) With quadratic survival model" ) + 
@@ -1024,23 +1096,29 @@ figs11c <- ggplot( cov2_plot, aes( x = Var1, y = Var2, fill = covariance ) ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
-  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 12.7, ymax = 13.0,
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 15.7, ymax = 16.0,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 12.7, ymax = 13.0,
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 15.7, ymax = 16.0,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 15.7, ymax = 16.0,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 12.7, ymax = 13.0,
+  annotate( "rect", xmin = 12.5, xmax = 15.5, ymin = 15.7, ymax = 16.0,
             fill = "#D0873C" ) +
-  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 0.5, ymax = 6.5,
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 0.5, ymax = 6.5,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 6.5, ymax = 9.5,
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 6.5, ymax = 9.5,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 9.5, ymax = 12.5,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 12.7, xmax = 13.0, ymin = 9.5, ymax = 12.5, 
+  annotate( "rect", xmin = 15.7, xmax = 16.0, ymin = 12.5, ymax = 15.5, 
             fill = "#D0873C" ) +
-  geom_vline( xintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 ) +
-  geom_hline( yintercept = c( 6.5, 10.5, 13.5 ), color = "white", linewidth = 0.7 )
+  geom_vline( xintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 )
 
 
-figs11d <- ggplot( cov3_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
+figs9d <- ggplot( cov3_plot, aes( x = Var1, y = Var2, fill = covariance ) ) + 
   geom_tile() +
   labs( title = "(d) With cubic survival model" ) + 
   base_theme + 
@@ -1050,36 +1128,40 @@ figs11d <- ggplot( cov3_plot, aes( x = Var1, y = Var2, fill = covariance ) ) +
   theme( axis.title.x = element_blank(),
          axis.title.y = element_blank(),
          axis.text.x = element_text( angle = 90, vjust = 0.5, hjust = 1 ) ) +
-  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 13.7, ymax = 14.0,
+  annotate( "rect", xmin = 0.5, xmax = 6.5, ymin = 16.7, ymax = 17.0,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 13.7, ymax = 14.0,
+  annotate( "rect", xmin = 6.5, xmax = 9.5, ymin = 16.7, ymax = 17.0,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 16.7, ymax = 17.0,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 9.5, xmax = 12.5, ymin = 13.7, ymax = 14.0,
+  annotate( "rect", xmin = 12.5, xmax = 16.5, ymin = 16.7, ymax = 17.0,
             fill = "#D0873C" ) +
-  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 0.5, ymax = 6.5,
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 0.5, ymax = 6.5,
             fill = "#7A5195" ) +
-  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 6.5, ymax = 9.5,
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 6.5, ymax = 9.5,
+            fill = "#88CCEE" ) +
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 9.5, ymax = 12.5,
             fill = "#8FB339" ) +
-  annotate( "rect", xmin = 13.7, xmax = 14.0, ymin = 9.5, ymax = 12.5, 
+  annotate( "rect", xmin = 16.7, xmax = 17.0, ymin = 12.5, ymax = 16.5, 
             fill = "#D0873C" ) +
-  geom_vline( xintercept = c( 6.5, 9.5), color = "white", linewidth = 0.7 ) +
-  geom_hline( yintercept = c( 6.5, 9.5 ), color = "white", linewidth = 0.7 )
+  geom_vline( xintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 ) +
+  geom_hline( yintercept = c( 6.5, 9.5, 12.5 ), color = "white", 
+              linewidth = 0.7 )
 
 
-figs11cd <- figs11c / figs11d + plot_layout( guides = "collect" )
+figs9cd <- figs9c / figs9d + plot_layout( guides = "collect" )
 
-figs11 <- wrap_plots( figs11ab ) + wrap_plots( figs11cd )
+figs9 <- wrap_plots( figs9ab ) + wrap_plots( figs9cd )
 
 
 # Save output ------------------------------------------------------------------
 
 ggsave( "results/Figure1.pdf", fig1, width = 180, height = 100, units = "mm",
         device = cairo_pdf )
-ggsave( "results/Figure2.pdf", fig2, width = 85, height = 100, units = "mm",
+ggsave( "results/Figure2.pdf", fig2, width = 130, height = 150, units = "mm",
         device = cairo_pdf )
-ggsave( "results/Figure3.pdf", fig3, width = 130, height = 150, units = "mm",
-        device = cairo_pdf )
-ggsave( "results/Figure4.pdf", fig4, width = 180, height = 100, units = "mm",
+ggsave( "results/Figure3.pdf", fig3, width = 180, height = 100, units = "mm",
         device = cairo_pdf )
 
 
@@ -1087,20 +1169,16 @@ ggsave( "results/FigureS2.pdf", figs2, width = 220, height = 110, units = "mm",
         device = cairo_pdf )
 ggsave( "results/FigureS3.pdf", figs3, width = 200, height = 160, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS4.pdf", figs4, width = 220, height = 110, units = "mm",
+ggsave( "results/FigureS4.pdf", figs4, width = 220, height = 160, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS5.pdf", figs5, width = 220, height = 110, units = "mm",
+ggsave( "results/FigureS5.pdf", figs5, width = 160, height = 110, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS6.pdf", figs6, width = 220, height = 160, units = "mm",
+ggsave( "results/FigureS6.pdf", figs6, width = 280, height = 240, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS7.pdf", figs7, width = 180, height = 110, units = "mm",
+ggsave( "results/FigureS7.pdf", figs7, width = 260, height = 220, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS8.pdf", figs8, width = 280, height = 220, units = "mm",
+ggsave( "results/FigureS8.pdf", figs8, width = 220, height = 180, units = "mm",
         device = cairo_pdf )
-ggsave( "results/FigureS9.pdf", figs9, width = 280, height = 200, units = "mm",
-        device = cairo_pdf )
-ggsave( "results/FigureS10.pdf", figs10, width = 220, height = 180, units = "mm",
-        device = cairo_pdf )
-ggsave( "results/FigureS11.pdf", figs11, width = 280, height = 220, units = "mm",
+ggsave( "results/FigureS9.pdf", figs9, width = 280, height = 220, units = "mm",
         device = cairo_pdf )
 
