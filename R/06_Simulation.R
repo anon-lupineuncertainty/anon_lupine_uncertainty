@@ -85,7 +85,7 @@ resample_germ <- function( n, g_sim, g_adj ){
   
   germ_adj    <- ( germ_ii['g0'] - g_adj ) / germ_ii['g0']
   
-  germ_coef   <- data.frame( g0 = germ_ii['g0'] * ( 1 - germ_adj ),
+  germ_coef   <- data.frame( g0 = germ_ii['g0'],
                              g1 = germ_ii['g1'] * ( 1 - germ_adj ),
                              g2 = germ_ii['g2'] * ( 1 - germ_adj ) )
   
@@ -170,12 +170,10 @@ germ500 <- lapply( 1:100, replace_germ, n = 500, pars = s_pars[1:1000,],
                    germ = germ_r, seed = T ) %>% bind_rows()
 
 
-# Some rows in germ6 result in NA values due to simulated values of g0 equal to
-  # zero; checked all other dataframes and there were no other instances of NA
-  # or Inf values
-  # Drop rows without replacement
+# When g0 is 0, other germination coefficients error, so these need to be removed
+# Only occurs in germ6
 
-germ6 <- germ6[-which(is.na(germ6$g0)),]
+germ6 <- germ6[-which(germ6$g0 == 0 ),]
 
 
 # Uncertainty analysis ---------------------------------------------------------
