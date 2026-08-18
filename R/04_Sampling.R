@@ -109,7 +109,7 @@ sample_germ <- function( df, n ){
   
   germ_adj    <- calc_germ_adj( df, g0 = germ_ii$g0 )
   
-  germ_coef   <- data.frame( g0 = germ_ii$g0 * ( 1 - germ_adj ),
+  germ_coef   <- data.frame( g0 = germ_ii$g0,
                              g1 = germ_ii$g1 * ( 1 - germ_adj ),
                              g2 = germ_ii$g2 * ( 1 - germ_adj ),
                              g_adj = germ_ii$g0 - ( germ_ii$g0 * germ_adj ) )
@@ -211,8 +211,8 @@ pars_var3   <- c( "surv_b0", "surv_b1", "surv_b2", "surv_b3",
 
 # Parameter covariance matrices
 
-corr2 <- cor( s_pars2[,c(pars_var2,"g_adj")] )
-corr3 <- cor( s_pars3[,c(pars_var3,"g_adj")] )
+corr2 <- cor( s_pars2[,c(pars_var2)] )
+corr3 <- cor( s_pars3[,c(pars_var3)] )
 
 corr2_plot <- pivot_longer(
   tibble::rownames_to_column(
@@ -234,10 +234,10 @@ corr3_plot <- pivot_longer(
   values_to = "correlation"
 )
 
-sig2_tbl <- cor_pmat( s_pars2[,c(pars_var2,"g_adj")] )
+sig2_tbl <- cor_pmat( s_pars2[,c(pars_var2)] )
 sig2 <- as.matrix(sig2_tbl[, -1])
 rownames(sig2) <- sig2_tbl$rowname
-sig3_tbl <- cor_pmat( s_pars3[,c(pars_var3,"g_adj")] )
+sig3_tbl <- cor_pmat( s_pars3[,c(pars_var3)] )
 sig3 <- as.matrix(sig3_tbl[, -1])
 rownames(sig3) <- sig3_tbl$rowname
 
