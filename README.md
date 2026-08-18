@@ -37,6 +37,7 @@ Other package dependencies include:
 | binom | 1.1.1.1 |
 | dplyr | 1.1.2 |
 | extraDistr | 1.10.0 |
+| ggh4x | 0.3.1 |
 | ggplot2 | 3.4.4 |
 | ggsignif | 0.6.4 |
 | Hmisc | 5.0.1 |
@@ -60,4 +61,4 @@ Other package dependencies include:
 - `04_Sampling.R`: Bootstrap resample demographic data and refit vital rate models to generate a dataframe of sampled parameter values
 - `05_Uncertainty.R`: Perform the uncertainty analysis (fully reproducible)
 - `06_Simulation.R`: Simulate germination data and analyze contribution to uncertainty (fully reproducible)
-- `07_Figures.R`: Prepare figures for publication (main text figures are fully reproducible, only supplemental figures S2-S5 and S10e,f are not reproducible)
+- `07_Figures.R`: Prepare figures for publication (main text figures are fully reproducible, only supplemental figures S2, S3, and S10e,f are not reproducible)
