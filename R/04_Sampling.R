@@ -109,7 +109,7 @@ sample_germ <- function( df, n ){
   
   germ_adj    <- calc_germ_adj( df, g0 = germ_ii$g0 )
   
-  germ_coef   <- data.frame( g0 = germ_ii$g0,
+  germ_coef   <- data.frame( g0 = germ_ii$g0 * ( 1 - germ_adj ),
                              g1 = germ_ii$g1 * ( 1 - germ_adj ),
                              g2 = germ_ii$g2 * ( 1 - germ_adj ),
                              g_adj = germ_ii$g0 - ( germ_ii$g0 * germ_adj ) )

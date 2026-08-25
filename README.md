@@ -19,13 +19,13 @@ A workflow overview is provided below, with fully-reproducible scripts indicated
 
 Analyses were conducted in R version 4.3.0 "Already Tomorrow"
 
-This analysis requires a development version of `ipmr` that includes the uncertainty analysis functionality.
+This analysis requires an anonymously-developed version of `ipmr` that includes the uncertainty analysis functionality.
 
 Install with
 ```{r, echo = T, eval = F}
 remotes::install_github(
     "anon-lupineuncertainty/ipmr",
-    ref = "v0.0.7-uncert"
+    ref = "v0.0.8"
 )
 ```
 

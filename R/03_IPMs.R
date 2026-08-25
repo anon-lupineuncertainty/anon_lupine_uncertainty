@@ -28,6 +28,10 @@
 # ==============================================================================
 
 options( stringsAsFactors = F )
+remotes::install_github(
+  "anon-lupineuncertainty/ipmr",
+  ref = "v0.0.8"
+)
 library( tidyverse )
 library( ipmr )
 

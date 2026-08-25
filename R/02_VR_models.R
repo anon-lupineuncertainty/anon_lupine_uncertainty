@@ -467,7 +467,7 @@ germ_adj <- ( other_pars$g0 - ratio ) / other_pars$g0
 
 # adjust mean germination coefficients and replace in other_pars dataframe
 
-other_pars$g0 <- other_pars$g0
+other_pars$g0 <- other_pars$g0 * ( 1 - germ_adj )
 other_pars$g1 <- other_pars$g1 * ( 1 - germ_adj )
 other_pars$g2 <- other_pars$g2 * ( 1 - germ_adj )
 

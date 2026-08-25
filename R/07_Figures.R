@@ -121,25 +121,32 @@ df$parameter <- factor( df$parameter,
 
 title_wrap <- function(x) str_wrap(x, width = 26)
 
-p1 <- ggplot(df, aes(x = cv, y = parameter, color = vital_rate)) +
+p1 <- ggplot(df, aes(x = variance, y = parameter, color = vital_rate)) +
   geom_vline(xintercept = 0) +
   geom_point(size = 2.5) +
-  geom_segment(aes(x = 0, xend = cv, yend = parameter), linewidth = 1) +
-  labs(x = "Coefficient of variation",
+  geom_segment(aes(x = 0, xend = variance, yend = parameter), linewidth = 1) +
+  scale_x_sqrt() +
+  labs(x = "Variance",
        y = "Parameter",
        title = title_wrap("(a) Parameter uncertainty")) +
-  scale_color_manual(values = vr_colors, guide = "none") +
+  scale_color_manual(values = vr_colors, guide = "none", 
+                     labels = c( "Growth", "Recruitment", 
+                                 "Reproduction", "Survival" )) +
   base_theme
 
-p2 <- ggplot(df, aes(x = elasticity, y = parameter, color = vital_rate)) +
+p2 <- ggplot(df, aes(x = sensitivity, y = parameter, color = vital_rate)) +
   geom_vline(xintercept = 0) +
+  geom_vline(xintercept = 1, color = "gray50", lty = 2, lwd = 0.3 ) +
+  geom_vline(xintercept = -1, color = "gray50", lty = 2, lwd = 0.3) +
   geom_point(size = 2.5) +
-  geom_segment(aes(x = 0, xend = elasticity, yend = parameter), 
+  geom_segment(aes(x = 0, xend = sensitivity, yend = parameter), 
                linewidth = 1) +
-  labs(x = "Elasticity",
+  labs(x = "Sensitivity",
        y = NULL,
        title = title_wrap("(b) Model sensitivity to parameter")) +
-  scale_color_manual(values = vr_colors, guide = "none") +
+  scale_color_manual(values = vr_colors, guide = "none",
+                     labels = c( "Growth", "Recruitment", 
+                                 "Reproduction", "Survival" )) +
   base_theme
 
 p3 <- ggplot(df, aes(x = variance_prop, y = parameter, color = vital_rate)) +
@@ -151,11 +158,13 @@ p3 <- ggplot(df, aes(x = variance_prop, y = parameter, color = vital_rate)) +
        y = NULL,
        title = title_wrap("(c) Parameter contribution to uncertainty in \u03BB"),
        color = "Vital rate") +
-  scale_color_manual(values = vr_colors) +
+  scale_color_manual(values = vr_colors, labels = c( "Growth", "Recruitment", 
+                                                     "Reproduction", "Survival" )) +
   base_theme
 
 fig1 <- p1 + p2 + p3 + plot_layout(ncol = 3, axes = 'collect_y') & 
-  theme(plot.title = element_text(hjust = 0.5, size = 8))
+  theme(plot.title = element_text(hjust = 0.5, size = 8),
+        axis.text.x = element_text(size = 6))
 
 
 # Figure 2 --------------------------------------------------------------------
@@ -216,8 +225,11 @@ fig2b <- ggplot() +
   geom_point( data = mean_lam_plot, aes( x = factor( mod ), y = value, 
                                              alpha = "Mean model" ),
               cex = 3, pch = 16 ) +
+  geom_signif( data = lam_tab_comp, aes( x = factor( mod ), y = lambda ),
+               comparisons = list( c("Varying","Constant")),
+               map_signif_level = TRUE ) +
   scale_x_discrete( labels = c( "Constant", "Varying (resampled)" ) ) +
-  ylim( 1.0, 2.1 ) +
+  ylim( 1.0, 1.8 ) +
   scale_alpha_manual( name = NULL,
                       values = c( 1, 1 ),
                       breaks = c( "Mean model", "Mean of samples" ),
@@ -234,7 +246,6 @@ fig2b <- ggplot() +
 # Patching them together
 
 fig2 <- fig2a + fig2b + plot_layout( ncol = 1, axes = "collect_x" )
-
 
 
 # Figure 3 ---------------------------------------------------------------------
@@ -675,7 +686,8 @@ g2_scale <- scale_y_continuous( breaks = c(0, 60000),
                                 sec.axis = sec_axis(~ . , name = "Simulated sample size",
                                                     breaks = NULL, labels = NULL))
 
-g0_x <- scale_x_continuous( limits = c(0,0.4),
+g0_x <- scale_x_continuous( limits = c(0.01,0.03),
+                            breaks = c(0.01, 0.02, 0.03),
                             oob = scales::oob_keep,
                             sec.axis = sec_axis(~ . , name = "Recruitment parameter", 
                                                 breaks = NULL, labels = NULL ) )
@@ -765,7 +777,7 @@ figs8a <- ggplot() +
                                                                  shape = c(16,NA),
                                                                  color = "#D0873C" ) )
   ) +
-  ylim( min( lam_tab_23$lambda ) - 0.03, max( lam_tab_23$lambda ) + 0.3 ) +
+  ylim( min( lam_tab_23$lambda ) - 0.03, max( lam_tab_23$lambda ) + 0.1 ) +
   labs( x = "Survival model", 
         y = "Lambda",
         title = "(a) Varying recruitment" ) +
