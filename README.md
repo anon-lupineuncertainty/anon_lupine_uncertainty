@@ -10,7 +10,7 @@ To maximize transparency and reproducibility, several upstream scripts that rely
 
 All downstream analyses beginning with the mean parameter sets are fully reproducible using the files provided in this repository together with the datasets hosted on Zenodo, which also include dummy dataframes illustrating the structure of the raw demographic data.
 
-Zenodo DOI: [DOI placeholder]
+Zenodo DOI: [10.5281/zenodo.21805231](https://doi.org/10.5281/zenodo.21805231)
 
 A workflow overview is provided below, with fully-reproducible scripts indicated.
 
