@@ -11,6 +11,7 @@ To maximize transparency and reproducibility, several upstream scripts that rely
 All downstream analyses beginning with the mean parameter sets are fully reproducible using the files provided in this repository together with the datasets hosted on Zenodo, which also include dummy dataframes illustrating the structure of the raw demographic data.
 
 Zenodo DOI: [10.5281/zenodo.21805231](https://doi.org/10.5281/zenodo.21805231)
+[View the anonymous data upload here during peer review](https://zenodo.org/records/21805231?preview=1&token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6ImZjMDdhNGZmLWYyMjAtNDE0Mi05ZDVmLWM5NmVkMTQwMWRjNCIsImRhdGEiOnt9LCJyYW5kb20iOiIyODJmMmYzNjE0MDVhOTg1MDYyOWFkMTJmZmUyZmNjYSJ9.FssvkTUKqYTVJfgxouhep_mB9Aandux62gub_EUtr4uJuWdcEfNMjsvHHz-G_Aye3e6LvNL5Lp8TBi4thMMbUw)
 
 A workflow overview is provided below, with fully-reproducible scripts indicated.
 
